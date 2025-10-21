@@ -1,0 +1,84 @@
+cmake_minimum_required(VERSION 3.10)
+project(assignment2 LANGUAGES CXX)
+
+# SET C++20 STANDARD - THIS WAS MISSING!
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Export compile commands for IntelliSense
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Prefer Qt6, fall back to Qt5
+find_package(Qt6 COMPONENTS Widgets QUIET)
+if (NOT Qt6_FOUND)
+    find_package(Qt5 COMPONENTS Widgets QUIET)
+endif()
+
+# Only compile implemented files (not empty stubs)
+set(CORE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Node.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Edge.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/City.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Agent.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Preset.cpp"
+    # Add more as Paridhi implements them:
+    # "${CMAKE_CURRENT_SOURCE_DIR}/core/ShortestPathPolicy.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/Metrics.cpp"
+)
+
+# Collect UI sources (exclude UI main for explicit control)
+# Comment out for now since UI isn't ready
+# file(GLOB UI_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui/*.cpp")
+set(UI_SOURCES "")
+
+# Remove any main.cpp or tests accidentally matched
+# list(FILTER CORE_SOURCES EXCLUDE REGEX ".*/main\\.cpp$|.*/tests/.*")
+# list(FILTER UI_SOURCES EXCLUDE REGEX ".*/main\\.cpp$|.*/tests/.*")
+
+# Create core static library
+add_library(assignment2_core STATIC ${CORE_SOURCES})
+target_include_directories(assignment2_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Ensure core library uses C++20
+target_compile_features(assignment2_core PUBLIC cxx_std_20)
+
+# UI entry point (single main) - make this optional for now
+set(UI_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/ui/main.cpp")
+if (EXISTS ${UI_MAIN})
+    # Build executable using only the single UI main + other UI sources (main excluded)
+    add_executable(assignment2 ${UI_MAIN} ${UI_SOURCES})
+    target_include_directories(assignment2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    
+    # Link core and Qt
+    target_link_libraries(assignment2 PRIVATE assignment2_core)
+    
+    if (Qt6_FOUND)
+        target_link_libraries(assignment2 PRIVATE Qt6::Widgets)
+        message(STATUS "Using Qt6")
+    elseif (Qt5_FOUND)
+        target_link_libraries(assignment2 PRIVATE Qt5::Widgets)
+        message(STATUS "Using Qt5")
+    endif()
+else()
+    message(WARNING "UI main not found: ${UI_MAIN} - skipping UI executable")
+endif()
+
+# Optional: Add test executable if test_city.cpp exists
+set(TEST_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/test_city.cpp")
+if (EXISTS ${TEST_MAIN})
+    add_executable(test_city ${TEST_MAIN})
+    target_link_libraries(test_city PRIVATE assignment2_core)
+    message(STATUS "Test executable enabled")
+endif()
+
+# Add test for Agent and Preset
+set(TEST_AGENT_PRESET "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_agent_preset.cpp")
+if (EXISTS ${TEST_AGENT_PRESET})
+    add_executable(test_agent_preset ${TEST_AGENT_PRESET})
+    target_link_libraries(test_agent_preset PRIVATE assignment2_core)
+    message(STATUS "Agent/Preset test executable enabled")
+endif()
