@@ -1,0 +1,3 @@
+add_library(gridlock_core INTERFACE)
+target_include_directories(gridlock_core INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(gridlock_core INTERFACE gridlock_types)
