@@ -24,7 +24,7 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/Preset.cpp"
     # Add more as Paridhi implements them:
     "${CMAKE_CURRENT_SOURCE_DIR}/core/ShortestPathPolicy.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
     # "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
     # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
     # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/Metrics.cpp"
@@ -105,4 +105,12 @@ if (EXISTS ${TEST_REQUIREMENTS_VERIFICATION})
     add_executable(test_requirements_verification ${TEST_REQUIREMENTS_VERIFICATION})
     target_link_libraries(test_requirements_verification PRIVATE assignment2_core)
     message(STATUS "Requirements Verification test executable enabled")
+endif()
+
+# Add test for CongestionAwarePolicy
+set(TEST_CONGESTION_AWARE_POLICY "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_congestion_aware_policy.cpp")
+if (EXISTS ${TEST_CONGESTION_AWARE_POLICY})
+    add_executable(test_congestion_aware_policy ${TEST_CONGESTION_AWARE_POLICY})
+    target_link_libraries(test_congestion_aware_policy PRIVATE assignment2_core)
+    message(STATUS "CongestionAwarePolicy test executable enabled")
 endif()
