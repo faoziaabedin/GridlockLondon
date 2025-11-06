@@ -28,10 +28,7 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/JsonReader.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/TimerService.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/ReportWriter.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
 )
 
 # Collect UI sources (exclude UI main for explicit control)
@@ -133,6 +130,22 @@ if (EXISTS ${TEST_ROUTE_PLANNER})
     add_executable(test_route_planner ${TEST_ROUTE_PLANNER})
     target_link_libraries(test_route_planner PRIVATE assignment2_core)
     message(STATUS "RoutePlanner test executable enabled")
+endif()
+
+# Add test for SimulationController
+set(TEST_SIMULATION_CONTROLLER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulation_controller.cpp")
+if (EXISTS ${TEST_SIMULATION_CONTROLLER})
+    add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
+    target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
+    message(STATUS "SimulationController test executable enabled")
+endif()
+
+# Add test for CLI Demo
+set(TEST_CLI_DEMO "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli_demo.cpp")
+if (EXISTS ${TEST_CLI_DEMO})
+    add_executable(test_cli_demo ${TEST_CLI_DEMO})
+    target_link_libraries(test_cli_demo PRIVATE assignment2_core)
+    message(STATUS "CLI Demo test executable enabled")
 endif()
 
 # Add test for Metrics
