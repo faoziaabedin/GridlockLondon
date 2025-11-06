@@ -155,3 +155,35 @@ if (EXISTS ${TEST_METRICS})
     target_link_libraries(test_metrics PRIVATE assignment2_core)
     message(STATUS "Metrics test executable enabled")
 endif()
+
+# Add test for PresetLoader
+set(TEST_PRESET_LOADER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_preset_loader.cpp")
+if (EXISTS ${TEST_PRESET_LOADER})
+    add_executable(test_preset_loader ${TEST_PRESET_LOADER})
+    target_link_libraries(test_preset_loader PRIVATE assignment2_core)
+    message(STATUS "PresetLoader test executable enabled")
+endif()
+
+# Add test for Adapter Stubs
+set(TEST_ADAPTER_STUBS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_adapter_stubs.cpp")
+if (EXISTS ${TEST_ADAPTER_STUBS})
+    add_executable(test_adapter_stubs ${TEST_ADAPTER_STUBS})
+    target_link_libraries(test_adapter_stubs PRIVATE assignment2_core)
+    message(STATUS "Adapter Stubs test executable enabled")
+endif()
+
+# Add test for SimulationController
+set(TEST_SIMULATION_CONTROLLER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulation_controller.cpp")
+if (EXISTS ${TEST_SIMULATION_CONTROLLER})
+    add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
+    target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
+    message(STATUS "SimulationController test executable enabled")
+endif()
+
+# Add test for CLI Demo
+set(TEST_CLI_DEMO "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli_demo.cpp")
+if (EXISTS ${TEST_CLI_DEMO})
+    add_executable(test_cli_demo ${TEST_CLI_DEMO})
+    target_link_libraries(test_cli_demo PRIVATE assignment2_core)
+    message(STATUS "CLI Demo test executable enabled")
+endif()

@@ -9,6 +9,7 @@ void Metrics::recordDeparture(const Agent& a) {
     // Record when an agent departs
     // Track departure time for potential future use
     // For now, we track this implicitly through recordArrival()
+    (void)a; // Suppress unused parameter warning
 }
 
 void Metrics::recordArrival(const Agent& a, int timeSteps) {
@@ -21,6 +22,7 @@ void Metrics::recordArrival(const Agent& a, int timeSteps) {
         // If no tick has been called yet, start tracking
         throughputPerTick_.push_back(1);
     }
+    (void)a; // Suppress unused parameter warning
 }
 
 void Metrics::snapshotEdgeLoads(const City& city) {
@@ -34,6 +36,7 @@ void Metrics::snapshotEdgeLoads(const City& city) {
     if (edgeLoadHistory_.empty()) {
         edgeLoadHistory_.push_back(std::vector<int>());
     }
+    (void)city; // Suppress unused parameter warning
 }
 
 double Metrics::averageTripTime() const {

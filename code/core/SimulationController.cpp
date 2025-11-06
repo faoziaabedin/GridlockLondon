@@ -8,6 +8,7 @@
 #include "Edge.h"
 #include "ShortestPathPolicy.h"
 #include "CongestionAwarePolicy.h"
+#include "../adapters/PresetLoader.h"
 #include <random>
 #include <algorithm>
 #include <unordered_set>
@@ -43,12 +44,18 @@ void SimulationController::loadPreset(const Preset& preset) {
     // Store preset settings
     tickMs = preset.getTickMs();
 
-    // Build the grid city
-    buildGridCity(preset.getRows(), preset.getCols(), preset.getBlockedEdges());
+    // Use PresetLoader to build city
+    PresetLoader loader;
+    city = loader.buildCity(preset);
 
-    // Create agents
-    int totalNodes = preset.getRows() * preset.getCols();
-    createAgents(preset.getAgentCount(), totalNodes);
+    // Use PresetLoader to spawn agents
+    agents = loader.spawnAgents(preset, *city);
+    
+    // Update agentsPtrs
+    agentsPtrs.clear();
+    for (auto& agent : agents) {
+        agentsPtrs.push_back(agent.get());
+    }
 
     // Create and set the routing policy
     currentPolicy = createPolicy(preset.getPolicy());
@@ -60,89 +67,10 @@ void SimulationController::loadPreset(const Preset& preset) {
 
 void SimulationController::buildGridCity(int rows, int cols, 
                                          const std::vector<std::pair<NodeId, NodeId>>& blockedEdges) {
-    city = std::make_unique<City>();
-
-    // Create nodes in grid pattern
-    // Node IDs: 0 to (rows*cols-1), numbered row by row
-    // Node at row i, col j has ID = i * cols + j
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < cols; ++col) {
-            NodeId nodeId = row * cols + col;
-            city->addNode(Node(nodeId, row, col));
-        }
-    }
-
-    // Create a set of blocked edges for quick lookup
-    // Use a simple hash function: combine two NodeIds into a single key
-    // For simplicity, use maxNodeId * from + to as the key
-    int maxNodeId = rows * cols;
-    std::unordered_set<long long> blockedSet;
-    for (const auto& edge : blockedEdges) {
-        long long key1 = static_cast<long long>(edge.first) * maxNodeId + edge.second;
-        long long key2 = static_cast<long long>(edge.second) * maxNodeId + edge.first;
-        blockedSet.insert(key1);
-        blockedSet.insert(key2);
-    }
-
-    // Create edges: horizontal and vertical connections
-    int edgeId = 0;
-    
-    // Horizontal edges (left-right)
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < cols - 1; ++col) {
-            NodeId from = row * cols + col;
-            NodeId to = row * cols + col + 1;
-            
-            // Check if this edge is blocked
-            long long edgeKey = static_cast<long long>(from) * (rows * cols) + to;
-            bool isBlocked = blockedSet.find(edgeKey) != blockedSet.end();
-            
-            // Create edge with default length 1.0 and capacity 10
-            Edge edge(edgeId, from, to, 1.0, 10);
-            if (isBlocked) {
-                edge.setBlocked(true);
-            }
-            city->addEdge(edge);
-            edgeId++;
-            
-            // Create reverse edge (bidirectional)
-            Edge reverseEdge(edgeId, to, from, 1.0, 10);
-            long long reverseKey = static_cast<long long>(to) * (rows * cols) + from;
-            if (blockedSet.find(reverseKey) != blockedSet.end()) {
-                reverseEdge.setBlocked(true);
-            }
-            city->addEdge(reverseEdge);
-            edgeId++;
-        }
-    }
-    
-    // Vertical edges (top-bottom)
-    for (int row = 0; row < rows - 1; ++row) {
-        for (int col = 0; col < cols; ++col) {
-            NodeId from = row * cols + col;
-            NodeId to = (row + 1) * cols + col;
-            
-            // Check if this edge is blocked
-            long long edgeKey = static_cast<long long>(from) * (rows * cols) + to;
-            bool isBlocked = blockedSet.find(edgeKey) != blockedSet.end();
-            
-            Edge edge(edgeId, from, to, 1.0, 10);
-            if (isBlocked) {
-                edge.setBlocked(true);
-            }
-            city->addEdge(edge);
-            edgeId++;
-            
-            // Create reverse edge (bidirectional)
-            Edge reverseEdge(edgeId, to, from, 1.0, 10);
-            long long reverseKey = static_cast<long long>(to) * (rows * cols) + from;
-            if (blockedSet.find(reverseKey) != blockedSet.end()) {
-                reverseEdge.setBlocked(true);
-            }
-            city->addEdge(reverseEdge);
-            edgeId++;
-        }
-    }
+    // This method is kept for backward compatibility but now uses PresetLoader
+    PresetLoader loader;
+    city = loader.createGridTopology(rows, cols);
+    loader.applyBlockedEdges(*city, blockedEdges);
 }
 
 void SimulationController::createAgents(int count, int totalNodes) {

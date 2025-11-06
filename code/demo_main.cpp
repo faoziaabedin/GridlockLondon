@@ -112,13 +112,9 @@ Preset createDemoPreset(int rows, int cols, int agentCount,
     preset.setTickMs(100);
     preset.setPolicy(policy);
     
-    // Optionally add some blocked edges for demonstration
-    // For a 3x3 grid, block edge from node 0 to node 1 as example
-    if (rows == 3 && cols == 3) {
-        std::vector<std::pair<NodeId, NodeId>> blocked;
-        // No blocked edges for simpler demo
-        preset.setBlockedEdges(blocked);
-    }
+    // No blocked edges for simpler demo
+    std::vector<std::pair<NodeId, NodeId>> blocked;
+    preset.setBlockedEdges(blocked);
     
     return preset;
 }
