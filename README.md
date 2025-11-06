@@ -100,7 +100,7 @@ Tracks simulation events without tight coupling.
 
 ## Team Member Contributions
 
-### Faozia Aabedin
+### Faozia 
 - Core domain classes: City, Node, Edge (Issue #1)
 - Preset configuration class (Issue #2)
 - SimulationController orchestrator (Issue #3)
