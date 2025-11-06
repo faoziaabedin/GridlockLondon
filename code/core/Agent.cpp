@@ -11,7 +11,8 @@ Agent::Agent(int id, NodeId origin, NodeId destination)
       currentEdge(std::nullopt),
       departureTime(0),
       arrivalTime(-1),
-      arrived(false) {
+      arrived(false),
+      stepsTaken(0) {
 }
 
 bool Agent::needsRoute() const {
@@ -32,6 +33,9 @@ void Agent::step(City& city) {
         return;
     }
     
+    // Increment step counter (agent is attempting to move)
+    stepsTaken++;
+    
     // If currently on an edge, finish traversing it
     if (currentEdge.has_value()) {
         EdgeId edgeId = currentEdge.value();
@@ -49,7 +53,7 @@ void Agent::step(City& city) {
         // Check if we reached destination
         if (currentNode == destination) {
             arrived = true;
-            arrivalTime = departureTime + getTravelTime();
+            arrivalTime = stepsTaken;  // Use steps taken as arrival time
         }
         
         return;
@@ -82,6 +86,7 @@ void Agent::step(City& city) {
         city.incrementOccupancy(nextEdge);
     }
     // else: wait at current node (capacity full)
+    // Note: stepsTaken still increments even if waiting (time passes)
 }
 
 int Agent::getId() const {
@@ -101,11 +106,11 @@ NodeId Agent::getCurrentNode() const {
 }
 
 int Agent::getTravelTime() const {
-    if (arrivalTime >= 0) {
-        return arrivalTime - departureTime;
+    if (arrived && arrivalTime >= 0) {
+        return arrivalTime;  // Return steps taken to arrive
     }
-    // Not yet arrived - return current elapsed time
-    return 0; // Will be calculated by Metrics when agent arrives
+    // Not yet arrived - return current steps taken
+    return stepsTaken;
 }
 
 std::optional<EdgeId> Agent::getCurrentEdge() const {

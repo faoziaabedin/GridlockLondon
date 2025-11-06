@@ -19,8 +19,9 @@ std::deque<EdgeId> RoutePlanner::computePath(City& city, Agent& agent) {
         return std::deque<EdgeId>(); // Return empty path if no policy
     }
     
-    // Get agent's origin and destination
-    NodeId start = agent.getOrigin();
+    // Always use current node for routing (works for both initial routing and rerouting)
+    // If agent is at origin, current node == origin; if rerouting mid-journey, current node is where agent is
+    NodeId start = agent.getCurrentNode();
     NodeId goal = agent.getDestination();
     
     // If already at destination, return empty path

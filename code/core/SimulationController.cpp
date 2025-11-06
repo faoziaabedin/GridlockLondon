@@ -186,9 +186,7 @@ void SimulationController::tick() {
             }
         }
 
-        // If rerouting is needed, compute new path
-        // Note: RoutePlanner uses getOrigin() which might not be correct for mid-journey rerouting
-        // For now, we'll recompute from origin, but ideally this should use current node
+        // If rerouting is needed, compute new path from current node
         if (needsReroute) {
             std::deque<EdgeId> newPath = planner->computePath(*city, *agent);
             if (!newPath.empty()) {

@@ -28,7 +28,7 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
 )
 
 # Collect UI sources (exclude UI main for explicit control)

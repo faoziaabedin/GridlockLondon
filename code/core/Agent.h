@@ -37,4 +37,5 @@ private:
     int departureTime;
     int arrivalTime;
     bool arrived;
+    int stepsTaken;  // Track number of steps taken for travel time calculation
 };
