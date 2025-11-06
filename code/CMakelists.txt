@@ -26,8 +26,9 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/ShortestPathPolicy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
     # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/Metrics.cpp"
 )
 
 # Collect UI sources (exclude UI main for explicit control)
@@ -121,4 +122,12 @@ if (EXISTS ${TEST_ROUTE_PLANNER})
     add_executable(test_route_planner ${TEST_ROUTE_PLANNER})
     target_link_libraries(test_route_planner PRIVATE assignment2_core)
     message(STATUS "RoutePlanner test executable enabled")
+endif()
+
+# Add test for SimulationController
+set(TEST_SIMULATION_CONTROLLER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulation_controller.cpp")
+if (EXISTS ${TEST_SIMULATION_CONTROLLER})
+    add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
+    target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
+    message(STATUS "SimulationController test executable enabled")
 endif()
