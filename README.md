@@ -96,7 +96,7 @@ Tracks simulation events without tight coupling.
 
 ## How Design Maps to Diagrams
 
-_See `report/uml/` for complete class, use case, and sequence diagrams._
+********** ADDDDDD *****************
 
 ## Team Member Contributions
 
