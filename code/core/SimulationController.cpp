@@ -280,6 +280,13 @@ void SimulationController::tick() {
             int travelTime = agent->getTravelTime();
             metrics->recordArrival(*agent, travelTime);
         }
+        
+        // Track max edge load by checking agent's current edge
+        if (agent->getCurrentEdge().has_value()) {
+            EdgeId edgeId = agent->getCurrentEdge().value();
+            int load = city->occupancy(edgeId);
+            metrics->updateMaxEdgeLoad(load);
+        }
     }
 
     // Update metrics with current city state

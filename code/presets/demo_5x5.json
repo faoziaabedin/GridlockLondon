@@ -1,0 +1,10 @@
+{
+  "name": "demo_5x5",
+  "rows": 5,
+  "cols": 5,
+  "blocked": [],
+  "agentCount": 10,
+  "tickMs": 100,
+  "policy": "CONGESTION_AWARE"
+}
+
