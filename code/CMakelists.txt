@@ -68,6 +68,14 @@ else()
     message(WARNING "UI main not found: ${UI_MAIN} - skipping UI executable")
 endif()
 
+# CLI Demo executable
+set(DEMO_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/demo_main.cpp")
+if (EXISTS ${DEMO_MAIN})
+    add_executable(gridlock_demo ${DEMO_MAIN})
+    target_link_libraries(gridlock_demo PRIVATE assignment2_core)
+    message(STATUS "CLI Demo executable enabled")
+endif()
+
 # Optional: Add test executable if test_city.cpp exists
 set(TEST_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/test_city.cpp")
 if (EXISTS ${TEST_MAIN})
@@ -130,4 +138,12 @@ if (EXISTS ${TEST_SIMULATION_CONTROLLER})
     add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
     target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
     message(STATUS "SimulationController test executable enabled")
+endif()
+
+# Add test for CLI Demo
+set(TEST_CLI_DEMO "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli_demo.cpp")
+if (EXISTS ${TEST_CLI_DEMO})
+    add_executable(test_cli_demo ${TEST_CLI_DEMO})
+    target_link_libraries(test_cli_demo PRIVATE assignment2_core)
+    message(STATUS "CLI Demo test executable enabled")
 endif()

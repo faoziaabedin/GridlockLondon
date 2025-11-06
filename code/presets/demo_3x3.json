@@ -1,0 +1,10 @@
+{
+  "name": "demo_3x3",
+  "rows": 3,
+  "cols": 3,
+  "blocked": [],
+  "agentCount": 7,
+  "tickMs": 100,
+  "policy": "SHORTEST_PATH"
+}
+

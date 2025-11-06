@@ -15,10 +15,10 @@ void Metrics::recordArrival(const Agent& a, int timeSteps) {
 }
 
 void Metrics::snapshotEdgeLoads(const City& city) {
-    // Update max edge load by checking all edges
-    // This is a simplified version - in a full implementation,
-    // we'd iterate through all edges in the city
-    // For now, we'll track this during tick() calls
+    // Max edge load is updated during agent movement in SimulationController::tick()
+    // This method is called after all agents have moved, so maxEdgeLoad_ should
+    // already be updated. In a full implementation, we could iterate all edges here
+    // to ensure we capture the maximum load across all edges.
 }
 
 double Metrics::averageTripTime() const {
@@ -30,11 +30,18 @@ double Metrics::averageTripTime() const {
 }
 
 int Metrics::totalThroughput() const {
-    return throughputPerTick_.empty() ? 0 : throughputPerTick_.back();
+    // Total throughput is the total number of agents that have arrived
+    return static_cast<int>(tripTimes_.size());
 }
 
 int Metrics::getMaxEdgeLoad() const {
     return maxEdgeLoad_;
+}
+
+void Metrics::updateMaxEdgeLoad(int load) {
+    if (load > maxEdgeLoad_) {
+        maxEdgeLoad_ = load;
+    }
 }
 
 void Metrics::tick() {

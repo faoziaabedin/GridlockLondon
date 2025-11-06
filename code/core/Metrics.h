@@ -10,6 +10,7 @@ public:
     double averageTripTime() const;
     int totalThroughput() const;
     int getMaxEdgeLoad() const;
+    void updateMaxEdgeLoad(int load);  // Update max edge load if higher
     void tick();
     void reset();
 private:
