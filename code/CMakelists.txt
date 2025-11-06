@@ -147,3 +147,11 @@ if (EXISTS ${TEST_CLI_DEMO})
     target_link_libraries(test_cli_demo PRIVATE assignment2_core)
     message(STATUS "CLI Demo test executable enabled")
 endif()
+
+# Add test for Metrics
+set(TEST_METRICS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_metrics.cpp")
+if (EXISTS ${TEST_METRICS})
+    add_executable(test_metrics ${TEST_METRICS})
+    target_link_libraries(test_metrics PRIVATE assignment2_core)
+    message(STATUS "Metrics test executable enabled")
+endif()

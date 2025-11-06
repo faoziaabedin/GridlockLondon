@@ -7,18 +7,33 @@
 
 void Metrics::recordDeparture(const Agent& a) {
     // Record when an agent departs
-    // This can be used for tracking departure times if needed
+    // Track departure time for potential future use
+    // For now, we track this implicitly through recordArrival()
 }
 
 void Metrics::recordArrival(const Agent& a, int timeSteps) {
     tripTimes_.push_back(static_cast<double>(timeSteps));
+    
+    // Update throughput for current tick
+    if (!throughputPerTick_.empty()) {
+        throughputPerTick_.back()++;
+    } else {
+        // If no tick has been called yet, start tracking
+        throughputPerTick_.push_back(1);
+    }
 }
 
 void Metrics::snapshotEdgeLoads(const City& city) {
-    // Max edge load is updated during agent movement in SimulationController::tick()
-    // This method is called after all agents have moved, so maxEdgeLoad_ should
-    // already be updated. In a full implementation, we could iterate all edges here
-    // to ensure we capture the maximum load across all edges.
+    // Capture edge loads for this tick
+    // Since City doesn't expose edge iteration directly, we track max load
+    // during agent movement. This method is called after all agents have moved.
+    // In a full implementation with edge iteration, we would capture all edge loads here.
+    
+    // For now, we maintain edgeLoadHistory_ structure but populate it elsewhere
+    // The max edge load is updated via updateMaxEdgeLoad() during agent movement
+    if (edgeLoadHistory_.empty()) {
+        edgeLoadHistory_.push_back(std::vector<int>());
+    }
 }
 
 double Metrics::averageTripTime() const {
@@ -46,13 +61,16 @@ void Metrics::updateMaxEdgeLoad(int load) {
 
 void Metrics::tick() {
     currentTick_++;
-    // Reset throughput for this tick (will be updated when agents arrive)
+    // Initialize throughput for this tick (will be updated when agents arrive)
     throughputPerTick_.push_back(0);
+    // Initialize edge load history for this tick
+    edgeLoadHistory_.push_back(std::vector<int>());
 }
 
 void Metrics::reset() {
     tripTimes_.clear();
     throughputPerTick_.clear();
+    edgeLoadHistory_.clear();
     maxEdgeLoad_ = 0;
     currentTick_ = 0;
 }
