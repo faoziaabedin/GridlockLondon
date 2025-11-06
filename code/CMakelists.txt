@@ -26,8 +26,9 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/ShortestPathPolicy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/adapters/Metrics.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
 )
 
 # Collect UI sources (exclude UI main for explicit control)
@@ -121,4 +122,20 @@ if (EXISTS ${TEST_ROUTE_PLANNER})
     add_executable(test_route_planner ${TEST_ROUTE_PLANNER})
     target_link_libraries(test_route_planner PRIVATE assignment2_core)
     message(STATUS "RoutePlanner test executable enabled")
+endif()
+
+# Add test for Metrics
+set(TEST_METRICS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_metrics.cpp")
+if (EXISTS ${TEST_METRICS})
+    add_executable(test_metrics ${TEST_METRICS})
+    target_link_libraries(test_metrics PRIVATE assignment2_core)
+    message(STATUS "Metrics test executable enabled")
+endif()
+
+# Add test for PresetLoader
+set(TEST_PRESET_LOADER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_preset_loader.cpp")
+if (EXISTS ${TEST_PRESET_LOADER})
+    add_executable(test_preset_loader ${TEST_PRESET_LOADER})
+    target_link_libraries(test_preset_loader PRIVATE assignment2_core)
+    message(STATUS "PresetLoader test executable enabled")
 endif()
