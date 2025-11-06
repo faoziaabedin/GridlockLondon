@@ -29,6 +29,9 @@ set(CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/JsonReader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/TimerService.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/ReportWriter.cpp"
 )
 
 # Collect UI sources (exclude UI main for explicit control)
@@ -138,4 +141,12 @@ if (EXISTS ${TEST_PRESET_LOADER})
     add_executable(test_preset_loader ${TEST_PRESET_LOADER})
     target_link_libraries(test_preset_loader PRIVATE assignment2_core)
     message(STATUS "PresetLoader test executable enabled")
+endif()
+
+# Add test for Adapter Stubs
+set(TEST_ADAPTER_STUBS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_adapter_stubs.cpp")
+if (EXISTS ${TEST_ADAPTER_STUBS})
+    add_executable(test_adapter_stubs ${TEST_ADAPTER_STUBS})
+    target_link_libraries(test_adapter_stubs PRIVATE assignment2_core)
+    message(STATUS "Adapter Stubs test executable enabled")
 endif()
