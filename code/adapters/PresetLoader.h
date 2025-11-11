@@ -40,7 +40,6 @@ public:
      */
     std::vector<std::unique_ptr<Agent>> spawnAgents(const Preset& preset, City& city);
 
-private:
     /**
      * Create grid topology for a city.
      * Creates nodes and bidirectional edges connecting neighbors.
@@ -58,4 +57,3 @@ private:
      */
     void applyBlockedEdges(City& city, const std::vector<std::pair<NodeId, NodeId>>& blockedEdges);
 };
-

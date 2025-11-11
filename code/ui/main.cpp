@@ -1,7 +1,9 @@
-#include <iostream>
-using namespace std;
+#include <QApplication>
+#include "MainWindow.h"
 
-int main() {
-    cout << "Hello Assignment 2!" << endl;
-    return 0;
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    MainWindow w;
+    w.show();
+    return app.exec();
 }

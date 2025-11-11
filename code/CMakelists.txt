@@ -1,189 +1,46 @@
+# code/CMakeLists.txt
 cmake_minimum_required(VERSION 3.10)
-project(assignment2 LANGUAGES CXX)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-# SET C++20 STANDARD - THIS WAS MISSING!
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Export compile commands for IntelliSense
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Prefer Qt6, fall back to Qt5
-find_package(Qt6 COMPONENTS Widgets QUIET)
-if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Widgets QUIET)
-endif()
-
-# Only compile implemented files (not empty stubs)
-set(CORE_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/Node.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/Edge.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/City.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/Agent.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/Preset.cpp"
-    # Add more as Paridhi implements them:
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/ShortestPathPolicy.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/CongestionAwarePolicy.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/RoutePlanner.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/Metrics.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/core/SimulationController.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/adapters/PresetLoader.cpp"
+# --- Core Library ---
+add_library(gridlock_core
+    core/Node.cpp
+    core/Edge.cpp
+    core/City.cpp
+    core/Agent.cpp
+    core/RoutePlanner.cpp
+    core/SimulationController.cpp
+    core/Metrics.cpp
+    core/Preset.cpp
+    core/CongestionAwarePolicy.cpp
+    core/ShortestPathPolicy.cpp
 )
 
-# Collect UI sources (exclude UI main for explicit control)
-# Comment out for now since UI isn't ready
-# file(GLOB UI_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui/*.cpp")
-set(UI_SOURCES "")
+target_include_directories(gridlock_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/adapters
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui
+)
 
-# Remove any main.cpp or tests accidentally matched
-# list(FILTER CORE_SOURCES EXCLUDE REGEX ".*/main\\.cpp$|.*/tests/.*")
-# list(FILTER UI_SOURCES EXCLUDE REGEX ".*/main\\.cpp$|.*/tests/.*")
+# --- Adapters ---
+add_library(gridlock_adapters
+    adapters/JsonReader.cpp
+    adapters/PresetLoader.cpp
+    adapters/ReportWriter.cpp
+    adapters/TimerService.cpp
+)
+target_include_directories(gridlock_adapters PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/adapters)
+target_link_libraries(gridlock_adapters gridlock_core)
 
-# Create core static library
-add_library(assignment2_core STATIC ${CORE_SOURCES})
-target_include_directories(assignment2_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# --- Qt UI (stub for now) ---
+add_executable(gridlock_ui
+    ui/main.cpp
+    ui/GridView.cpp
+    ui/MainWindow.cpp
+    ui/MetricsPanel.cpp
+)
+target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets)
 
-# Ensure core library uses C++20
-target_compile_features(assignment2_core PUBLIC cxx_std_20)
-
-# UI entry point (single main) - make this optional for now
-set(UI_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/ui/main.cpp")
-if (EXISTS ${UI_MAIN})
-    # Build executable using only the single UI main + other UI sources (main excluded)
-    add_executable(assignment2 ${UI_MAIN} ${UI_SOURCES})
-    target_include_directories(assignment2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    
-    # Link core and Qt
-    target_link_libraries(assignment2 PRIVATE assignment2_core)
-    
-    if (Qt6_FOUND)
-        target_link_libraries(assignment2 PRIVATE Qt6::Widgets)
-        message(STATUS "Using Qt6")
-    elseif (Qt5_FOUND)
-        target_link_libraries(assignment2 PRIVATE Qt5::Widgets)
-        message(STATUS "Using Qt5")
-    endif()
-else()
-    message(WARNING "UI main not found: ${UI_MAIN} - skipping UI executable")
-endif()
-
-# CLI Demo executable
-set(DEMO_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/demo_main.cpp")
-if (EXISTS ${DEMO_MAIN})
-    add_executable(gridlock_demo ${DEMO_MAIN})
-    target_link_libraries(gridlock_demo PRIVATE assignment2_core)
-    message(STATUS "CLI Demo executable enabled")
-endif()
-
-# Optional: Add test executable if test_city.cpp exists
-set(TEST_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/test_city.cpp")
-if (EXISTS ${TEST_MAIN})
-    add_executable(test_city ${TEST_MAIN})
-    target_link_libraries(test_city PRIVATE assignment2_core)
-    message(STATUS "Test executable enabled")
-endif()
-
-# Add test for Agent and Preset
-set(TEST_AGENT_PRESET "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_agent_preset.cpp")
-if (EXISTS ${TEST_AGENT_PRESET})
-    add_executable(test_agent_preset ${TEST_AGENT_PRESET})
-    target_link_libraries(test_agent_preset PRIVATE assignment2_core)
-    message(STATUS "Agent/Preset test executable enabled")
-endif()
-
-# Add test for Route Policy
-set(TEST_ROUTE_POLICY "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_route_policy.cpp")
-if (EXISTS ${TEST_ROUTE_POLICY})
-    add_executable(test_route_policy ${TEST_ROUTE_POLICY})
-    target_link_libraries(test_route_policy PRIVATE assignment2_core)
-    message(STATUS "Route Policy test executable enabled")
-endif()
-
-# Add test for Route Policy Contract
-set(TEST_ROUTE_POLICY_CONTRACT "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_route_policy_contract.cpp")
-if (EXISTS ${TEST_ROUTE_POLICY_CONTRACT})
-    add_executable(test_route_policy_contract ${TEST_ROUTE_POLICY_CONTRACT})
-    target_link_libraries(test_route_policy_contract PRIVATE assignment2_core)
-    message(STATUS "Route Policy Contract test executable enabled")
-endif()
-
-# Add test for Requirements Verification
-set(TEST_REQUIREMENTS_VERIFICATION "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_requirements_verification.cpp")
-if (EXISTS ${TEST_REQUIREMENTS_VERIFICATION})
-    add_executable(test_requirements_verification ${TEST_REQUIREMENTS_VERIFICATION})
-    target_link_libraries(test_requirements_verification PRIVATE assignment2_core)
-    message(STATUS "Requirements Verification test executable enabled")
-endif()
-
-# Add test for CongestionAwarePolicy
-set(TEST_CONGESTION_AWARE_POLICY "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_congestion_aware_policy.cpp")
-if (EXISTS ${TEST_CONGESTION_AWARE_POLICY})
-    add_executable(test_congestion_aware_policy ${TEST_CONGESTION_AWARE_POLICY})
-    target_link_libraries(test_congestion_aware_policy PRIVATE assignment2_core)
-    message(STATUS "CongestionAwarePolicy test executable enabled")
-endif()
-
-# Add test for RoutePlanner
-set(TEST_ROUTE_PLANNER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_route_planner.cpp")
-if (EXISTS ${TEST_ROUTE_PLANNER})
-    add_executable(test_route_planner ${TEST_ROUTE_PLANNER})
-    target_link_libraries(test_route_planner PRIVATE assignment2_core)
-    message(STATUS "RoutePlanner test executable enabled")
-endif()
-
-# Add test for SimulationController
-set(TEST_SIMULATION_CONTROLLER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulation_controller.cpp")
-if (EXISTS ${TEST_SIMULATION_CONTROLLER})
-    add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
-    target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
-    message(STATUS "SimulationController test executable enabled")
-endif()
-
-# Add test for CLI Demo
-set(TEST_CLI_DEMO "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli_demo.cpp")
-if (EXISTS ${TEST_CLI_DEMO})
-    add_executable(test_cli_demo ${TEST_CLI_DEMO})
-    target_link_libraries(test_cli_demo PRIVATE assignment2_core)
-    message(STATUS "CLI Demo test executable enabled")
-endif()
-
-# Add test for Metrics
-set(TEST_METRICS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_metrics.cpp")
-if (EXISTS ${TEST_METRICS})
-    add_executable(test_metrics ${TEST_METRICS})
-    target_link_libraries(test_metrics PRIVATE assignment2_core)
-    message(STATUS "Metrics test executable enabled")
-endif()
-
-# Add test for PresetLoader
-set(TEST_PRESET_LOADER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_preset_loader.cpp")
-if (EXISTS ${TEST_PRESET_LOADER})
-    add_executable(test_preset_loader ${TEST_PRESET_LOADER})
-    target_link_libraries(test_preset_loader PRIVATE assignment2_core)
-    message(STATUS "PresetLoader test executable enabled")
-endif()
-
-# Add test for Adapter Stubs
-set(TEST_ADAPTER_STUBS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_adapter_stubs.cpp")
-if (EXISTS ${TEST_ADAPTER_STUBS})
-    add_executable(test_adapter_stubs ${TEST_ADAPTER_STUBS})
-    target_link_libraries(test_adapter_stubs PRIVATE assignment2_core)
-    message(STATUS "Adapter Stubs test executable enabled")
-endif()
-
-# Add test for SimulationController
-set(TEST_SIMULATION_CONTROLLER "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulation_controller.cpp")
-if (EXISTS ${TEST_SIMULATION_CONTROLLER})
-    add_executable(test_simulation_controller ${TEST_SIMULATION_CONTROLLER})
-    target_link_libraries(test_simulation_controller PRIVATE assignment2_core)
-    message(STATUS "SimulationController test executable enabled")
-endif()
-
-# Add test for CLI Demo
-set(TEST_CLI_DEMO "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli_demo.cpp")
-if (EXISTS ${TEST_CLI_DEMO})
-    add_executable(test_cli_demo ${TEST_CLI_DEMO})
-    target_link_libraries(test_cli_demo PRIVATE assignment2_core)
-    message(STATUS "CLI Demo test executable enabled")
-endif()
+# --- Tests ---
+add_executable(test_city tests/test_city.cpp)
+target_link_libraries(test_city PRIVATE gridlock_core gridlock_adapters)
