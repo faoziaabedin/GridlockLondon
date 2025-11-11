@@ -21,7 +21,7 @@ GridlockLondon simulates traffic flow on a grid network where agents (vehicles) 
 
 ### Clone the Repository
 ```bash
-git clone <your-repository-url>
+git clone <repository-url>
 cd GridlockLondon
 ```
 
