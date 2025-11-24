@@ -128,3 +128,20 @@ target_link_libraries(test_ui_graphics_items PRIVATE
     Qt6::Core 
     Qt6::Test
 )
+
+# Modern UI tests
+add_executable(test_modern_ui tests/test_modern_ui.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_modern_ui PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)

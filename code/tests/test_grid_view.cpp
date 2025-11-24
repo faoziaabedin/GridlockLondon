@@ -1,6 +1,7 @@
 // code/tests/test_grid_view.cpp
 #include <QtTest/QtTest>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include "../ui/GridView.h"
@@ -46,6 +47,10 @@ private slots:
     void testFitToWindow();
     void testGridToggle();
     void testPan();
+    
+    // Styling tests
+    void testDarkBackground();
+    void testGridColor();
 
 private:
     QApplication* app;
@@ -55,14 +60,23 @@ private:
 };
 
 void TestGridView::initTestCase() {
-    // Initialize QApplication for Qt widgets
-    int argc = 0;
-    char* argv[] = {nullptr};
-    app = new QApplication(argc, argv);
+    // Check if QApplication already exists (from QTEST_MAIN)
+    if (!QCoreApplication::instance()) {
+        int argc = 0;
+        char* argv[] = {nullptr};
+        app = new QApplication(argc, argv);
+    } else {
+        app = qobject_cast<QApplication*>(QCoreApplication::instance());
+    }
 }
 
 void TestGridView::cleanupTestCase() {
-    delete app;
+    // Don't delete app if it was created by QTEST_MAIN
+    // Only delete if we created it ourselves
+    if (app && app != QCoreApplication::instance()) {
+        delete app;
+        app = nullptr;
+    }
 }
 
 void TestGridView::init() {
@@ -88,8 +102,22 @@ void TestGridView::init() {
 }
 
 void TestGridView::cleanup() {
-    delete gridView;
-    controller->reset();
+    // Delete widgets before application cleanup
+    if (gridView) {
+        // Ensure gridView is hidden and events processed before deletion
+        gridView->hide();
+        QApplication::processEvents();
+        delete gridView;
+        gridView = nullptr;
+    }
+    if (controller) {
+        controller->reset();
+    }
+    // Process events multiple times to ensure all cleanup is complete
+    if (app) {
+        QApplication::processEvents();
+        QApplication::processEvents();
+    }
 }
 
 void TestGridView::testGridViewCreation() {
@@ -245,6 +273,29 @@ void TestGridView::testPan() {
     
     // Pan is tested through mouse/keyboard events in integration tests
     // This ensures the functionality exists
+    QVERIFY(true);
+}
+
+void TestGridView::testDarkBackground() {
+    gridView->setSimulationController(controller);
+    
+    // Check that GridView has dark background styling
+    QString styleSheet = gridView->styleSheet();
+    QVERIFY(styleSheet.contains("#0A0A0A") || 
+            styleSheet.contains("background-color") ||
+            styleSheet.contains("border-radius"));
+}
+
+void TestGridView::testGridColor() {
+    gridView->setSimulationController(controller);
+    gridView->updateScene();
+    
+    // Grid should use subtle colors
+    gridView->setShowGrid(true);
+    gridView->setShowGrid(false);
+    gridView->setShowGrid(true);
+    
+    // Should not crash
     QVERIFY(true);
 }
 

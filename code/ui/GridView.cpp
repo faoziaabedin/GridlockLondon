@@ -298,7 +298,8 @@ GridView::GridView(QWidget* parent)
     setRenderHint(QPainter::SmoothPixmapTransform);
     setDragMode(QGraphicsView::NoDrag);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    setBackgroundBrush(QColor(18, 18, 24)); // Dark background
+    setBackgroundBrush(QColor(10, 10, 10)); // Dark background #0A0A0A
+    setStyleSheet("background-color: #0A0A0A; border-radius: 8px;");
     
     // Animation timer for smooth updates
     m_animationTimer->setInterval(16); // ~60 FPS
@@ -744,12 +745,12 @@ void GridView::keyPressEvent(QKeyEvent* event) {
 void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
     Q_UNUSED(rect);
     
-    // Dark background
-    painter->fillRect(rect, QColor(18, 18, 24));
+    // Dark background #0A0A0A
+    painter->fillRect(rect, QColor(10, 10, 10));
     
     if (m_showGrid) {
-        // Draw subtle grid
-        painter->setPen(QPen(QColor(40, 40, 50), 1));
+        // Draw subtle grid with #3E3E42 color
+        painter->setPen(QPen(QColor(62, 62, 66), 1));
         const qreal gridSize = 50.0;
         
         qreal left = qFloor(rect.left() / gridSize) * gridSize;
