@@ -1,0 +1,27 @@
+## Quick Commands Summary
+
+**1. Try updating Qt6 first:**
+```bash
+brew upgrade qt@6
+cd code/build
+rm -rf CMakeCache.txt CMakeFiles
+cmake ..
+make
+```
+
+**2. If that doesn't work, check if test executables exist elsewhere:**
+```bash
+find . -name 'test_*' -type f -executable 2>/dev/null
+```
+
+**3. Run Python tests (these don't need compilation):**
+```bash
+cd code
+python3 verify_tests.py
+python3 final_verification.py
+```
+
+**4. Check Qt installation:**
+```bash
+brew info qt@6
+```
