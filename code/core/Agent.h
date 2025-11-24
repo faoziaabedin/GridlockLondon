@@ -3,6 +3,7 @@
 #include "Types.h"
 #include <optional>
 #include <deque>
+#include <cstddef>
 
 class City;
 

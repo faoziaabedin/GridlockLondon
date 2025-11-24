@@ -1,6 +1,12 @@
 # code/CMakeLists.txt
 cmake_minimum_required(VERSION 3.10)
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+project(GridlockLondon)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 # --- Core Library ---
 add_library(gridlock_core
@@ -32,15 +38,93 @@ add_library(gridlock_adapters
 target_include_directories(gridlock_adapters PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/adapters)
 target_link_libraries(gridlock_adapters gridlock_core)
 
-# --- Qt UI (stub for now) ---
+# --- Qt UI ---
 add_executable(gridlock_ui
     ui/main.cpp
     ui/GridView.cpp
+    ui/GridView.h
     ui/MainWindow.cpp
+    ui/MainWindow.h
     ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
 )
-target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets)
+target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets Qt6::Core)
 
 # --- Tests ---
 add_executable(test_city tests/test_city.cpp)
 target_link_libraries(test_city PRIVATE gridlock_core gridlock_adapters)
+
+# --- UI Tests (require Qt) ---
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets Core)
+
+# GridView tests
+add_executable(test_grid_view tests/test_grid_view.cpp
+    ui/GridView.cpp
+    ui/GridView.h
+)
+target_link_libraries(test_grid_view PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# MainWindow tests
+add_executable(test_main_window tests/test_main_window.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_main_window PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# MetricsPanel tests
+add_executable(test_metrics_panel tests/test_metrics_panel.cpp
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_metrics_panel PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# UI Integration test
+add_executable(test_ui_integration tests/test_ui_integration.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_ui_integration PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core
+)
+
+# UI Graphics Items test
+add_executable(test_ui_graphics_items tests/test_ui_graphics_items.cpp
+    ui/GridView.cpp
+    ui/GridView.h
+)
+target_link_libraries(test_ui_graphics_items PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)

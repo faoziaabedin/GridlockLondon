@@ -35,6 +35,12 @@ public:
     void incrementOccupancy(EdgeId edgeId);
     void decrementOccupancy(EdgeId edgeId);
     
+    // Iteration helpers (for UI)
+    int getNodeCount() const;
+    int getEdgeCount() const;
+    NodeId getNodeIdByIndex(int index) const;
+    EdgeId getEdgeIdByIndex(int index) const;
+    
 private:
     std::vector<Node> nodes;
     std::vector<Edge> edges;
