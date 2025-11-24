@@ -1,0 +1,26 @@
+# ============================================
+# SIMPLE COMMANDS TO RUN ALL TESTS
+# ============================================
+
+# OPTION 1: Run all tests (if already built)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_all_tests.sh
+
+# OPTION 2: Build and test (one command)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./build_and_test.sh
+
+# OPTION 3: Python tests only (always works, no build needed)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+python3 verify_tests.py
+python3 verify_route_planner.py
+python3 verify_congestion_policy.py
+python3 final_verification.py
+
+# OPTION 4: Manual build then test
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+cmake ..
+make -j4
+cd ..
+./run_all_tests.sh
+

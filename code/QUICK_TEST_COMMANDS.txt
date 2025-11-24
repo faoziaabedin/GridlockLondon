@@ -1,0 +1,22 @@
+# ============================================
+# QUICK TEST COMMANDS
+# ============================================
+
+# COMMAND 1: Run Python tests (ALWAYS WORKS - no build needed)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_python_tests.sh
+
+# COMMAND 2: Try to run all tests (will skip C++ if not built)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_all_tests.sh
+
+# COMMAND 3: Build with Qt Creator, then test
+# Step 1: Open Qt Creator → File → Open → code/CMakeLists.txt → Build
+# Step 2: Then run:
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_all_tests.sh
+
+# COMMAND 4: Check if tests are built
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+ls test_* 2>/dev/null && echo "✓ Tests built!" || echo "✗ Tests not built - use Qt Creator"
+

@@ -49,6 +49,19 @@ run_test() {
             FAILED=$((FAILED + 1))
             return 1
         fi
+    # For GoogleTest, look for "PASSED" or "FAILED" in summary
+    elif grep -qE "\[  PASSED  \]|\[  FAILED  \]" /tmp/test_output_$$.txt; then
+        if grep -q "\[  FAILED  \]" /tmp/test_output_$$.txt; then
+            echo "    ✗ FAILED: Some GoogleTest cases failed"
+            echo "    Last 10 lines of output:"
+            tail -10 /tmp/test_output_$$.txt | sed 's/^/      /'
+            FAILED=$((FAILED + 1))
+            return 1
+        else
+            echo "    ✓ PASSED"
+            PASSED=$((PASSED + 1))
+            return 0
+        fi
     # For non-Qt tests, look for success patterns
     elif grep -qiE "All.*Pass|SUCCESS|Completed Successfully" /tmp/test_output_$$.txt; then
         echo "    ✓ PASSED"
@@ -106,16 +119,53 @@ run_python_verification() {
 echo "=== C++ Unit Tests ==="
 echo ""
 
-# Core tests
-run_test "test_city" "test_city"
+# Check if build directory has any test executables
+if [ ! -f "test_city" ] && [ ! -f "test_grid_view" ]; then
+    echo "⚠️  WARNING: No test executables found in build directory."
+    echo ""
+    echo "The C++ tests need to be built first. Options:"
+    echo ""
+    echo "1. Build with Qt Creator (Recommended):"
+    echo "   - Open Qt Creator"
+    echo "   - File → Open File or Project"
+    echo "   - Select: code/CMakeLists.txt"
+    echo "   - Build → Build Project"
+    echo "   - Then run this script again"
+    echo ""
+    echo "2. Run Python tests only (works now):"
+    echo "   ./run_python_tests.sh"
+    echo ""
+    echo "Skipping C++ tests and running Python tests only..."
+    echo ""
+    SKIP_CPP_TESTS=true
+else
+    SKIP_CPP_TESTS=false
+fi
 
-# UI tests
-run_test "test_grid_view" "test_grid_view"
-run_test "test_main_window" "test_main_window"
-run_test "test_metrics_panel" "test_metrics_panel"
-run_test "test_ui_graphics_items" "test_ui_graphics_items"
-run_test "test_ui_integration" "test_ui_integration"
-run_test "test_modern_ui" "test_modern_ui"
+if [ "$SKIP_CPP_TESTS" != "true" ]; then
+    # Core tests
+    run_test "test_city" "test_city"
+
+    # UI tests
+    run_test "test_grid_view" "test_grid_view"
+    run_test "test_main_window" "test_main_window"
+    run_test "test_metrics_panel" "test_metrics_panel"
+    run_test "test_ui_graphics_items" "test_ui_graphics_items"
+    run_test "test_ui_integration" "test_ui_integration"
+    run_test "test_modern_ui" "test_modern_ui"
+
+    # Issue 4 tests
+    run_test "test_preset_gallery" "test_preset_gallery"
+    run_test "test_agent_inspector" "test_agent_inspector"
+    run_test "test_comparative_analysis" "test_comparative_analysis"
+
+    # GoogleTest/GoogleMock Test Suites (Issue 5)
+    run_test "RoutePlanner Test Suite" "test_route_planner_googletest"
+    run_test "Agent Test Suite" "test_agent_googletest"
+    run_test "Metrics Test Suite" "test_metrics_googletest"
+    run_test "SimulationController Test Suite" "test_simulation_controller_googletest"
+    run_test "Factory Pattern Test Suite" "test_factory_pattern_googletest"
+fi
 
 echo ""
 echo "=== Python Verification Scripts ==="
