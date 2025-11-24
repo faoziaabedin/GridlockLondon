@@ -603,6 +603,18 @@ void MainWindow::setupStyles() {
         #secondaryButton:hover {
             background-color: #3E3E42;
         }
+        
+        #statCard {
+            background-color: #252526;
+            border: 1px solid #3E3E42;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        #statCard:hover {
+            border-color: #007ACC;
+            box-shadow: 0 2px 8px rgba(0, 122, 204, 0.2);
+        }
     )";
     
     setStyleSheet(style);
