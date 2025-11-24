@@ -1,22 +1,31 @@
 # ============================================
-# QUICK TEST COMMANDS
+# QUICK TEST COMMANDS - Copy & Paste Ready
 # ============================================
 
-# COMMAND 1: Run Python tests (ALWAYS WORKS - no build needed)
+# 1. RUN ALL TESTS (After building with Qt Creator)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_all_tests.sh
+
+# 2. RUN PYTHON TESTS ONLY (No build needed)
 cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
 ./run_python_tests.sh
 
-# COMMAND 2: Try to run all tests (will skip C++ if not built)
-cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
-./run_all_tests.sh
-
-# COMMAND 3: Build with Qt Creator, then test
-# Step 1: Open Qt Creator → File → Open → code/CMakeLists.txt → Build
-# Step 2: Then run:
-cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
-./run_all_tests.sh
-
-# COMMAND 4: Check if tests are built
+# 3. RUN UI POLISH TESTS
 cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
-ls test_* 2>/dev/null && echo "✓ Tests built!" || echo "✗ Tests not built - use Qt Creator"
+./test_ui_polish
 
+# 4. RUN CREATIONAL PATTERNS TESTS
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+./test_creational_patterns
+
+# 5. RUN ALL GOOGLETEST SUITES
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+ctest --output-on-failure
+
+# 6. GENERATE CODE COVERAGE
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_coverage.sh
+
+# ============================================
+# NOTE: Build with Qt Creator first!
+# ============================================

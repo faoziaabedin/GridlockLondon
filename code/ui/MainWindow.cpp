@@ -34,7 +34,7 @@
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), m_gridView(nullptr), m_metricsPanel(nullptr),
-      m_controller(nullptr), m_simulationTimer(new QTimer(this)), 
+      m_analyticsPanel(nullptr), m_controller(nullptr), m_simulationTimer(new QTimer(this)), 
       m_fpsTimer(new QTimer(this)), m_isRunning(false), m_currentSpeed(5),
       m_frameCount(0), m_lastFpsUpdate(0) {
     
@@ -135,6 +135,11 @@ void MainWindow::setupMenuBar() {
     m_viewMenu->addSeparator();
     m_viewMenu->addAction("🌓 Toggle Theme", this, []() { /* Theme toggle */ });
     m_viewMenu->addAction("🎨 Settings", this, []() { /* Settings dialog */ });
+    
+    // Analytics Menu
+    QMenu* analyticsMenu = menuBar()->addMenu("📊 Analytics");
+    analyticsMenu->addAction("📊 Advanced Analytics", this, &MainWindow::onOpenAnalytics);
+    analyticsMenu->addSeparator();
     
     // Help Menu
     m_helpMenu = menuBar()->addMenu("📖 Help");
@@ -973,6 +978,20 @@ void MainWindow::onAbout() {
         "Faozia and Paridhi</p>"
         "<p>An OOP Assignment 2 project demonstrating<br>"
         "traffic simulation with routing policies.</p>");
+}
+
+void MainWindow::onOpenAnalytics() {
+    if (!m_analyticsPanel) {
+        m_analyticsPanel = new AnalyticsPanel(this);
+        m_analyticsPanel->setSimulationController(m_controller);
+        m_analyticsPanel->setWindowTitle("Advanced Analytics - GridlockLondon");
+        m_analyticsPanel->resize(1000, 700);
+    }
+    
+    m_analyticsPanel->show();
+    m_analyticsPanel->raise();
+    m_analyticsPanel->activateWindow();
+    m_analyticsPanel->updateAnalytics();
 }
 
 void MainWindow::onShortcuts() {

@@ -64,6 +64,7 @@ private slots:
     void onAbout();
     void onShortcuts();
     void onSectionToggled();
+    void onOpenAnalytics();
 
 private:
     void setupUI();
@@ -84,6 +85,7 @@ private:
     QWidget* m_centralWidget;
     QWidget* m_controlPanel;
     QWidget* m_agentInfoPanel;
+    class AnalyticsPanel* m_analyticsPanel;  // Forward declaration
     
     // Toolbar
     QToolBar* m_toolbar;
