@@ -34,6 +34,7 @@ public:
 
     // Policy management
     void setPolicy(PolicyType policy);
+    PolicyType getPolicy() const;
 
     // Getters
     City* getCity() const;
@@ -58,6 +59,7 @@ private:
     // For reset functionality - store initial agent states
     std::vector<std::pair<NodeId, NodeId>> initialAgentRoutes;
     std::unique_ptr<IRoutePolicy> currentPolicy;
+    PolicyType currentPolicyType = PolicyType::SHORTEST_PATH;
     
     // Helper for getAgents() - return vector of raw pointers
     mutable std::vector<Agent*> agentsPtrs;

@@ -1,6 +1,46 @@
 # code/CMakeLists.txt
-cmake_minimum_required(VERSION 3.10)
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+cmake_minimum_required(VERSION 3.14)
+project(GridlockLondon)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Enable code coverage
+option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
+if(ENABLE_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+endif()
+
+# GoogleTest/GoogleMock setup
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.14.0
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Charts)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# --- Patterns Library (Creational Design Patterns) ---
+add_library(gridlock_patterns
+    patterns/RegularGridFactory.cpp
+    patterns/RandomGridFactory.cpp
+    patterns/RealWorldGridFactory.cpp
+    patterns/PresetBuilder.cpp
+    patterns/ShortestPathFactory.cpp
+    patterns/CongestionAwareFactory.cpp
+    patterns/PolicyRegistry.cpp
+)
+target_include_directories(gridlock_patterns PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/patterns
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+)
 
 # --- Core Library ---
 add_library(gridlock_core
@@ -20,7 +60,9 @@ target_include_directories(gridlock_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/adapters
     ${CMAKE_CURRENT_SOURCE_DIR}/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/patterns
 )
+target_link_libraries(gridlock_patterns PRIVATE gridlock_core)
 
 # --- Adapters ---
 add_library(gridlock_adapters
@@ -32,15 +74,257 @@ add_library(gridlock_adapters
 target_include_directories(gridlock_adapters PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/adapters)
 target_link_libraries(gridlock_adapters gridlock_core)
 
-# --- Qt UI (stub for now) ---
+# --- Qt UI ---
 add_executable(gridlock_ui
     ui/main.cpp
     ui/GridView.cpp
+    ui/GridView.h
     ui/MainWindow.cpp
+    ui/MainWindow.h
     ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
 )
-target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets)
+target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets Qt6::Core)
 
 # --- Tests ---
 add_executable(test_city tests/test_city.cpp)
 target_link_libraries(test_city PRIVATE gridlock_core gridlock_adapters)
+
+# --- UI Tests (require Qt) ---
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets Core)
+
+# GridView tests
+add_executable(test_grid_view tests/test_grid_view.cpp
+    ui/GridView.cpp
+    ui/GridView.h
+)
+target_link_libraries(test_grid_view PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# MainWindow tests
+add_executable(test_main_window tests/test_main_window.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_main_window PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# MetricsPanel tests
+add_executable(test_metrics_panel tests/test_metrics_panel.cpp
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_metrics_panel PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# UI Integration test
+add_executable(test_ui_integration tests/test_ui_integration.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_ui_integration PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core
+)
+
+# UI Graphics Items test
+add_executable(test_ui_graphics_items tests/test_ui_graphics_items.cpp
+    ui/GridView.cpp
+    ui/GridView.h
+)
+target_link_libraries(test_ui_graphics_items PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# Modern UI tests
+add_executable(test_modern_ui tests/test_modern_ui.cpp
+    ui/MainWindow.cpp
+    ui/MainWindow.h
+    ui/GridView.cpp
+    ui/GridView.h
+    ui/MetricsPanel.cpp
+    ui/MetricsPanel.h
+)
+target_link_libraries(test_modern_ui PRIVATE 
+    gridlock_core 
+    gridlock_adapters 
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Charts
+    Qt6::Test
+)
+
+# Creational Patterns Test Suite
+add_executable(test_creational_patterns tests/test_creational_patterns.cpp
+    patterns/RegularGridFactory.cpp
+    patterns/RandomGridFactory.cpp
+    patterns/RealWorldGridFactory.cpp
+    patterns/PresetBuilder.cpp
+    patterns/ShortestPathFactory.cpp
+    patterns/CongestionAwareFactory.cpp
+    patterns/PolicyRegistry.cpp
+)
+target_link_libraries(test_creational_patterns PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    gridlock_patterns
+    Qt6::Widgets 
+    Qt6::Core 
+    Qt6::Test
+)
+
+# --- GoogleTest/GoogleMock Test Suites ---
+# Enable testing
+enable_testing()
+
+# RoutePlanner Test Suite (15+ tests)
+add_executable(test_route_planner_googletest tests/test_route_planner_googletest.cpp
+    core/RoutePlanner.cpp
+    core/City.cpp
+    core/Node.cpp
+    core/Edge.cpp
+    core/Agent.cpp
+    core/ShortestPathPolicy.cpp
+    core/CongestionAwarePolicy.cpp
+    tests/mocks/MockCity.cpp
+)
+target_include_directories(test_route_planner_googletest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(test_route_planner_googletest PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    GTest::gtest 
+    GTest::gtest_main
+    GTest::gmock
+)
+add_test(NAME RoutePlannerTest COMMAND test_route_planner_googletest)
+
+# Agent Test Suite (12+ tests)
+add_executable(test_agent_googletest tests/test_agent_googletest.cpp
+    core/Agent.cpp
+    core/City.cpp
+    core/Node.cpp
+    core/Edge.cpp
+    tests/mocks/MockCity.cpp
+)
+target_include_directories(test_agent_googletest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(test_agent_googletest PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    GTest::gtest 
+    GTest::gtest_main
+    GTest::gmock
+)
+add_test(NAME AgentTest COMMAND test_agent_googletest)
+
+# Metrics Test Suite (10+ tests)
+add_executable(test_metrics_googletest tests/test_metrics_googletest.cpp
+    core/Metrics.cpp
+    core/City.cpp
+    core/Node.cpp
+    core/Edge.cpp
+    core/Agent.cpp
+)
+target_include_directories(test_metrics_googletest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(test_metrics_googletest PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    GTest::gtest 
+    GTest::gtest_main
+    GTest::gmock
+)
+add_test(NAME MetricsTest COMMAND test_metrics_googletest)
+
+# SimulationController Test Suite (10+ tests)
+add_executable(test_simulation_controller_googletest tests/test_simulation_controller_googletest.cpp
+    core/SimulationController.cpp
+    core/City.cpp
+    core/Node.cpp
+    core/Edge.cpp
+    core/Agent.cpp
+    core/RoutePlanner.cpp
+    core/Metrics.cpp
+    core/Preset.cpp
+    core/ShortestPathPolicy.cpp
+    core/CongestionAwarePolicy.cpp
+    adapters/PresetLoader.cpp
+)
+target_include_directories(test_simulation_controller_googletest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(test_simulation_controller_googletest PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    GTest::gtest 
+    GTest::gtest_main
+    GTest::gmock
+)
+add_test(NAME SimulationControllerTest COMMAND test_simulation_controller_googletest)
+
+# Factory Pattern (PresetLoader) Test Suite (8+ tests)
+add_executable(test_factory_pattern_googletest tests/test_factory_pattern_googletest.cpp
+    adapters/PresetLoader.cpp
+    core/City.cpp
+    core/Node.cpp
+    core/Edge.cpp
+    core/Agent.cpp
+    core/Preset.cpp
+)
+target_include_directories(test_factory_pattern_googletest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(test_factory_pattern_googletest PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    GTest::gtest 
+    GTest::gtest_main
+    GTest::gmock
+)
+add_test(NAME FactoryPatternTest COMMAND test_factory_pattern_googletest)
+
+# Coverage target
+if(ENABLE_COVERAGE)
+    find_program(LCOV_PATH lcov)
+    find_program(GENHTML_PATH genhtml)
+    
+    if(LCOV_PATH AND GENHTML_PATH)
+        add_custom_target(coverage
+            # Clean previous coverage data
+            COMMAND ${LCOV_PATH} --directory . --zerocounters
+            # Run tests
+            COMMAND ctest
+            # Capture coverage data
+            COMMAND ${LCOV_PATH} --directory . --capture --output-file coverage.info
+            # Remove system headers and external code
+            COMMAND ${LCOV_PATH} --remove coverage.info '/usr/*' '*/googletest/*' '*/build/*' --output-file coverage.info
+            # Generate HTML report
+            COMMAND ${GENHTML_PATH} coverage.info --output-directory coverage_html
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating code coverage report"
+        )
+    endif()
+endif()

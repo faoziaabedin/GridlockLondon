@@ -1,0 +1,31 @@
+# ============================================
+# QUICK TEST COMMANDS - Copy & Paste Ready
+# ============================================
+
+# 1. RUN ALL TESTS (After building with Qt Creator)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_all_tests.sh
+
+# 2. RUN PYTHON TESTS ONLY (No build needed)
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_python_tests.sh
+
+# 3. RUN UI POLISH TESTS
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+./test_ui_polish
+
+# 4. RUN CREATIONAL PATTERNS TESTS
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+./test_creational_patterns
+
+# 5. RUN ALL GOOGLETEST SUITES
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code/build
+ctest --output-on-failure
+
+# 6. GENERATE CODE COVERAGE
+cd /Users/parimehla/Desktop/fao+pri/oop-assignment-2-faozia-and-paridhi/code
+./run_coverage.sh
+
+# ============================================
+# NOTE: Build with Qt Creator first!
+# ============================================

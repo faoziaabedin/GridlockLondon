@@ -58,7 +58,8 @@ void SimulationController::loadPreset(const Preset& preset) {
     }
 
     // Create and set the routing policy
-    currentPolicy = createPolicy(preset.getPolicy());
+    currentPolicyType = preset.getPolicy();
+    currentPolicy = createPolicy(currentPolicyType);
     planner = std::make_unique<RoutePlanner>(currentPolicy.get());
 
     // Save initial state for reset
@@ -220,10 +221,15 @@ void SimulationController::tick() {
 }
 
 void SimulationController::setPolicy(PolicyType policy) {
+    currentPolicyType = policy;
     currentPolicy = createPolicy(policy);
     if (planner) {
         planner->setPolicy(currentPolicy.get());
     }
+}
+
+PolicyType SimulationController::getPolicy() const {
+    return currentPolicyType;
 }
 
 City* SimulationController::getCity() const {

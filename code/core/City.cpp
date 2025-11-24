@@ -105,3 +105,25 @@ void City::decrementOccupancy(EdgeId edgeId) {
         occ[edgeId] = current - 1;
     }
 }
+
+int City::getNodeCount() const {
+    return static_cast<int>(nodes.size());
+}
+
+int City::getEdgeCount() const {
+    return static_cast<int>(edges.size());
+}
+
+NodeId City::getNodeIdByIndex(int index) const {
+    if (index < 0 || index >= static_cast<int>(nodes.size())) {
+        throw std::runtime_error("Node index out of range: " + std::to_string(index));
+    }
+    return nodes[index].getId();
+}
+
+EdgeId City::getEdgeIdByIndex(int index) const {
+    if (index < 0 || index >= static_cast<int>(edges.size())) {
+        throw std::runtime_error("Edge index out of range: " + std::to_string(index));
+    }
+    return edges[index].getId();
+}
