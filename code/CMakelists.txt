@@ -27,6 +27,21 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# --- Patterns Library (Creational Design Patterns) ---
+add_library(gridlock_patterns
+    patterns/RegularGridFactory.cpp
+    patterns/RandomGridFactory.cpp
+    patterns/RealWorldGridFactory.cpp
+    patterns/PresetBuilder.cpp
+    patterns/ShortestPathFactory.cpp
+    patterns/CongestionAwareFactory.cpp
+    patterns/PolicyRegistry.cpp
+)
+target_include_directories(gridlock_patterns PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/patterns
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+)
+
 # --- Core Library ---
 add_library(gridlock_core
     core/Node.cpp
@@ -45,7 +60,9 @@ target_include_directories(gridlock_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/adapters
     ${CMAKE_CURRENT_SOURCE_DIR}/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/patterns
 )
+target_link_libraries(gridlock_patterns PRIVATE gridlock_core)
 
 # --- Adapters ---
 add_library(gridlock_adapters
@@ -163,6 +180,25 @@ target_link_libraries(test_modern_ui PRIVATE
     Qt6::Widgets 
     Qt6::Core 
     Qt6::Charts
+    Qt6::Test
+)
+
+# Creational Patterns Test Suite
+add_executable(test_creational_patterns tests/test_creational_patterns.cpp
+    patterns/RegularGridFactory.cpp
+    patterns/RandomGridFactory.cpp
+    patterns/RealWorldGridFactory.cpp
+    patterns/PresetBuilder.cpp
+    patterns/ShortestPathFactory.cpp
+    patterns/CongestionAwareFactory.cpp
+    patterns/PolicyRegistry.cpp
+)
+target_link_libraries(test_creational_patterns PRIVATE 
+    gridlock_core 
+    gridlock_adapters
+    gridlock_patterns
+    Qt6::Widgets 
+    Qt6::Core 
     Qt6::Test
 )
 

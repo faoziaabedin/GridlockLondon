@@ -14,3 +14,8 @@ compile_commands.json
 *.log
 .vscode/
 .idea/
+
+# CMake FetchContent dependencies
+code/_deps/
+_deps/
+code/CMakeLists 2.txt
