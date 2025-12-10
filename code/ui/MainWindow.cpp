@@ -31,6 +31,7 @@
 #include <QStandardPaths>
 #include <QDateTime>
 #include <QtMath>
+#include "AnalyticsPanel.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), m_gridView(nullptr), m_metricsPanel(nullptr),

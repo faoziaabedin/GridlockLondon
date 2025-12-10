@@ -9,7 +9,7 @@ TrafficFlowAnalyzer::TrafficFlowAnalyzer() {
 }
 
 std::vector<TrafficFlowAnalyzer::Hotspot> TrafficFlowAnalyzer::detectHotspots(
-    const City& city, double threshold) {
+    const City& city, double threshold) const {
     
     std::vector<Hotspot> hotspots;
     
@@ -46,7 +46,7 @@ std::vector<TrafficFlowAnalyzer::Hotspot> TrafficFlowAnalyzer::detectHotspots(
 }
 
 std::vector<TrafficFlowAnalyzer::FlowData> TrafficFlowAnalyzer::getFlowData(
-    const std::vector<Agent*>& agents) {
+    const std::vector<Agent*>& agents) const {
     
     std::map<std::pair<NodeId, NodeId>, int> flowCounts;
     std::map<std::pair<NodeId, NodeId>, double> flowTimes;
@@ -81,7 +81,7 @@ std::vector<TrafficFlowAnalyzer::FlowData> TrafficFlowAnalyzer::getFlowData(
 }
 
 std::map<EdgeId, TrafficFlowAnalyzer::UtilizationData> TrafficFlowAnalyzer::getUtilizationHeatmap(
-    const City& city) {
+    const City& city) const {
     
     std::map<EdgeId, UtilizationData> heatmap;
     
@@ -107,7 +107,7 @@ std::map<EdgeId, TrafficFlowAnalyzer::UtilizationData> TrafficFlowAnalyzer::getU
 }
 
 std::vector<TrafficFlowAnalyzer::TimePattern> TrafficFlowAnalyzer::analyzeTimePatterns(
-    const std::vector<std::pair<int, double>>& history) {
+    const std::vector<std::pair<int, double>>& history) const {
     
     std::vector<TimePattern> patterns;
     
@@ -125,7 +125,7 @@ std::vector<TrafficFlowAnalyzer::TimePattern> TrafficFlowAnalyzer::analyzeTimePa
 }
 
 std::vector<TrafficFlowAnalyzer::Hotspot> TrafficFlowAnalyzer::getTopBottlenecks(
-    const City& city, int topN) {
+    const City& city, int topN) const {
     
     auto hotspots = detectHotspots(city, 0.0);  // Get all edges
     
@@ -143,7 +143,7 @@ std::vector<TrafficFlowAnalyzer::Hotspot> TrafficFlowAnalyzer::getTopBottlenecks
     return hotspots;
 }
 
-double TrafficFlowAnalyzer::calculateUtilization(const City& city, EdgeId edgeId) {
+double TrafficFlowAnalyzer::calculateUtilization(const City& city, EdgeId edgeId) const {
     int occupancy = city.occupancy(edgeId);
     int capacity = city.edgeCapacity(edgeId);
     
@@ -152,7 +152,7 @@ double TrafficFlowAnalyzer::calculateUtilization(const City& city, EdgeId edgeId
     return static_cast<double>(occupancy) / capacity;
 }
 
-double TrafficFlowAnalyzer::calculateCongestionLevel(int occupancy, int capacity) {
+double TrafficFlowAnalyzer::calculateCongestionLevel(int occupancy, int capacity) const {
     if (capacity == 0) return 0.0;
     
     double utilization = static_cast<double>(occupancy) / capacity;
@@ -161,4 +161,3 @@ double TrafficFlowAnalyzer::calculateCongestionLevel(int occupancy, int capacity
     // This makes hotspots more visible
     return std::pow(utilization, 1.5);
 }
-

@@ -83,8 +83,7 @@ bool ReportExporter::exportPowerPoint(const QString& filepath,
     
     out << "\nSlide 2: Traffic Flow Analysis\n";
     out << "------------------------------\n";
-    auto hotspots = flowAnalyzer.detectHotspots(*controller.getCity());
-    for (const auto& hotspot : hotspots) {
+    auto hotspots = const_cast<TrafficFlowAnalyzer&>(flowAnalyzer).detectHotspots(*controller.getCity());    for (const auto& hotspot : hotspots) {
         out << QString("Edge %1: Utilization %2%\n")
                .arg(hotspot.edgeId)
                .arg(hotspot.utilization * 100.0, 0, 'f', 1);
@@ -117,8 +116,7 @@ bool ReportExporter::exportCSV(const QString& filepath,
     out << "EdgeId,Occupancy,Capacity,Utilization,CongestionLevel\n";
     
     // Data rows
-    auto heatmap = flowAnalyzer.getUtilizationHeatmap(*controller.getCity());
-    for (const auto& pair : heatmap) {
+    auto heatmap = const_cast<TrafficFlowAnalyzer&>(flowAnalyzer).getUtilizationHeatmap(*controller.getCity());    for (const auto& pair : heatmap) {
         const auto& data = pair.second;
         out << QString("%1,%2,%3,%4,%5\n")
                .arg(data.edgeId)
@@ -148,14 +146,12 @@ QString ReportExporter::exportJSON(const SimulationController& controller,
         QJsonObject metrics;
         metrics["averageTripTime"] = controller.getMetrics()->averageTripTime();
         metrics["totalThroughput"] = controller.getMetrics()->totalThroughput();
-        metrics["maxEdgeLoad"] = controller.getMetrics()->maxEdgeLoad();
-        root["metrics"] = metrics;
+        metrics["maxEdgeLoad"] = controller.getMetrics()->getMaxEdgeLoad();        root["metrics"] = metrics;
     }
     
     // Hotspots
     if (controller.getCity()) {
-        auto hotspots = flowAnalyzer.detectHotspots(*controller.getCity());
-        QJsonArray hotspotArray;
+    auto hotspots = const_cast<TrafficFlowAnalyzer&>(flowAnalyzer).detectHotspots(*controller.getCity());        QJsonArray hotspotArray;
         for (const auto& hotspot : hotspots) {
             QJsonObject h;
             h["edgeId"] = static_cast<int>(hotspot.edgeId);
@@ -170,8 +166,7 @@ QString ReportExporter::exportJSON(const SimulationController& controller,
     
     // Flow data
     if (controller.getCity()) {
-        auto flowData = flowAnalyzer.getFlowData(controller.getAgents());
-        QJsonArray flowArray;
+    auto flowData = flowAnalyzer.getFlowData(const_cast<SimulationController&>(controller).getAgents());        QJsonArray flowArray;
         for (const auto& flow : flowData) {
             QJsonObject f;
             f["from"] = static_cast<int>(flow.from);
@@ -241,7 +236,7 @@ QString ReportExporter::formatMetrics(const Metrics& metrics) {
     html += QString("<p><strong>Total Throughput:</strong> %1 agents</p>\n")
                .arg(metrics.totalThroughput());
     html += QString("<p><strong>Max Edge Load:</strong> %1 vehicles</p>\n")
-               .arg(metrics.maxEdgeLoad());
+               .arg(metrics.getMaxEdgeLoad());
     html += "</div>\n";
     return html;
 }

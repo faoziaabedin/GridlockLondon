@@ -7,8 +7,6 @@
 #include "../analytics/PolicyEffectivenessAnalyzer.h"
 #include "../analytics/PredictiveAnalyzer.h"
 #include "../analytics/ReportExporter.h"
-#include "../core/ErrorHandler.h"
-#include "../ui/AnimationHelper.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -17,6 +15,9 @@
 #include <QTableWidget>
 #include <QTextEdit>
 #include <QGroupBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QTabWidget>
 #include <QStandardPaths>
 #include <QFile>
 #include <QTextStream>
@@ -24,12 +25,12 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QDateTime>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QValueAxis>
+#include <QChart>
+#include <QChartView>
+#include <QBarSeries>
+#include <QBarSet>
+#include <QBarCategoryAxis>
+#include <QValueAxis>
 
 AnalyticsPanel::AnalyticsPanel(QWidget* parent)
     : QWidget(parent),
@@ -38,7 +39,6 @@ AnalyticsPanel::AnalyticsPanel(QWidget* parent)
       m_policyAnalyzer(std::make_unique<PolicyEffectivenessAnalyzer>()),
       m_predictiveAnalyzer(std::make_unique<PredictiveAnalyzer>()),
       m_reportExporter(std::make_unique<ReportExporter>()) {
-    
     setupUI();
 }
 
@@ -54,16 +54,12 @@ void AnalyticsPanel::setupUI() {
     mainLayout->setContentsMargins(16, 16, 16, 16);
     mainLayout->setSpacing(12);
     
-    // Title
     QLabel* title = new QLabel("📊 Advanced Analytics", this);
     title->setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF; margin-bottom: 8px;");
     mainLayout->addWidget(title);
     
-    // Tab widget
     setupTabs();
     mainLayout->addWidget(m_tabWidget);
-    
-    // Export buttons
     mainLayout->addWidget(createExportButtonGroup());
 }
 
@@ -91,11 +87,9 @@ QWidget* AnalyticsPanel::createExportButtonGroup() {
 
 void AnalyticsPanel::setupTabs() {
     m_tabWidget = new QTabWidget(this);
-    
     setupFlowAnalysisTab();
     setupPolicyComparisonTab();
     setupPredictiveTab();
-    
     connect(m_tabWidget, &QTabWidget::currentChanged, this, &AnalyticsPanel::onTabChanged);
 }
 
@@ -103,7 +97,6 @@ void AnalyticsPanel::setupFlowAnalysisTab() {
     m_flowAnalysisTab = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(m_flowAnalysisTab);
     
-    // Hotspot table
     QLabel* hotspotLabel = new QLabel("🔥 Traffic Hotspots (Bottlenecks)", this);
     hotspotLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
     layout->addWidget(hotspotLabel);
@@ -114,7 +107,6 @@ void AnalyticsPanel::setupFlowAnalysisTab() {
     m_hotspotTable->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(m_hotspotTable);
     
-    // Heatmap label (placeholder for visualization)
     m_heatmapLabel = new QLabel("Utilization Heatmap (visualization coming soon)", this);
     m_heatmapLabel->setStyleSheet("background-color: #1E1E1E; padding: 20px; border-radius: 8px;");
     layout->addWidget(m_heatmapLabel);
@@ -126,13 +118,11 @@ void AnalyticsPanel::setupPolicyComparisonTab() {
     m_policyComparisonTab = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(m_policyComparisonTab);
     
-    // Comparison table
     m_comparisonTable = new QTableWidget(this);
     m_comparisonTable->setColumnCount(4);
     m_comparisonTable->setHorizontalHeaderLabels({"Metric", "Policy A", "Policy B", "Difference"});
     layout->addWidget(m_comparisonTable);
     
-    // Statistical analysis
     QLabel* statsLabel = new QLabel("📈 Statistical Analysis", this);
     statsLabel->setStyleSheet("font-weight: bold; font-size: 14px; margin-top: 12px;");
     layout->addWidget(statsLabel);
@@ -149,28 +139,24 @@ void AnalyticsPanel::setupPredictiveTab() {
     m_predictiveTab = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(m_predictiveTab);
     
-    // Trend projection
     QGroupBox* trendGroup = new QGroupBox("📈 Trend Projection", this);
     QVBoxLayout* trendLayout = new QVBoxLayout(trendGroup);
     m_trendProjectionLabel = new QLabel("Analyzing trends...", this);
     trendLayout->addWidget(m_trendProjectionLabel);
     layout->addWidget(trendGroup);
     
-    // Completion estimate
     QGroupBox* completionGroup = new QGroupBox("⏱️ Completion Estimate", this);
     QVBoxLayout* completionLayout = new QVBoxLayout(completionGroup);
     m_completionEstimateLabel = new QLabel("Calculating...", this);
     completionLayout->addWidget(m_completionEstimateLabel);
     layout->addWidget(completionGroup);
     
-    // Bottleneck prediction
     QGroupBox* bottleneckGroup = new QGroupBox("⚠️ Bottleneck Prediction", this);
     QVBoxLayout* bottleneckLayout = new QVBoxLayout(bottleneckGroup);
     m_bottleneckPredictionLabel = new QLabel("Analyzing...", this);
     bottleneckLayout->addWidget(m_bottleneckPredictionLabel);
     layout->addWidget(bottleneckGroup);
     
-    // Agent recommendation
     QGroupBox* recommendationGroup = new QGroupBox("💡 Recommendations", this);
     QVBoxLayout* recLayout = new QVBoxLayout(recommendationGroup);
     m_agentRecommendationLabel = new QLabel("Calculating optimal agent count...", this);
@@ -181,37 +167,13 @@ void AnalyticsPanel::setupPredictiveTab() {
 }
 
 void AnalyticsPanel::setupExportButtons() {
-    // Buttons are created in createExportButtonGroup
-    // This method is kept for consistency but implementation is in createExportButtonGroup()
-}
-
-QWidget* AnalyticsPanel::createExportButtonGroup() {
-    QGroupBox* exportGroup = new QGroupBox("📤 Export Reports", this);
-    QHBoxLayout* layout = new QHBoxLayout(exportGroup);
-    
-    m_exportPDFButton = new QPushButton("📄 PDF", this);
-    m_exportPowerPointButton = new QPushButton("📊 PowerPoint", this);
-    m_exportCSVButton = new QPushButton("📋 CSV", this);
-    m_exportJSONButton = new QPushButton("🔗 JSON API", this);
-    
-    layout->addWidget(m_exportPDFButton);
-    layout->addWidget(m_exportPowerPointButton);
-    layout->addWidget(m_exportCSVButton);
-    layout->addWidget(m_exportJSONButton);
-    
-    connect(m_exportPDFButton, &QPushButton::clicked, this, &AnalyticsPanel::onExportPDF);
-    connect(m_exportPowerPointButton, &QPushButton::clicked, this, &AnalyticsPanel::onExportPowerPoint);
-    connect(m_exportCSVButton, &QPushButton::clicked, this, &AnalyticsPanel::onExportCSV);
-    connect(m_exportJSONButton, &QPushButton::clicked, this, &AnalyticsPanel::onExportJSON);
-    
-    return exportGroup;
+    // Implemented in createExportButtonGroup
 }
 
 void AnalyticsPanel::updateAnalytics() {
     if (!m_controller || !m_controller->getCity()) {
         return;
     }
-    
     updateFlowAnalysis();
     updatePolicyComparison();
     updatePredictiveAnalytics();
@@ -221,7 +183,6 @@ void AnalyticsPanel::updateFlowAnalysis() {
     if (!m_controller || !m_controller->getCity()) {
         return;
     }
-    
     updateHotspotTable();
     updateUtilizationHeatmap();
 }
@@ -232,12 +193,10 @@ void AnalyticsPanel::updateHotspotTable() {
     }
     
     auto hotspots = m_flowAnalyzer->getTopBottlenecks(*m_controller->getCity(), 10);
-    
     m_hotspotTable->setRowCount(static_cast<int>(hotspots.size()));
     
     for (size_t i = 0; i < hotspots.size(); ++i) {
         const auto& hotspot = hotspots[i];
-        
         m_hotspotTable->setItem(static_cast<int>(i), 0, 
             new QTableWidgetItem(QString::number(hotspot.edgeId)));
         m_hotspotTable->setItem(static_cast<int>(i), 1,
@@ -257,15 +216,12 @@ void AnalyticsPanel::updateUtilizationHeatmap() {
     }
     
     auto heatmap = m_flowAnalyzer->getUtilizationHeatmap(*m_controller->getCity());
-    
     QString text = QString("Utilization Heatmap: %1 edges analyzed\n").arg(heatmap.size());
     text += "Color coding: Green (low) → Yellow (medium) → Red (high utilization)";
-    
     m_heatmapLabel->setText(text);
 }
 
 void AnalyticsPanel::updatePolicyComparison() {
-    // Placeholder - would compare two policy runs
     m_comparisonTable->setRowCount(4);
     m_comparisonTable->setItem(0, 0, new QTableWidgetItem("Average Trip Time"));
     m_comparisonTable->setItem(1, 0, new QTableWidgetItem("Throughput"));
@@ -283,8 +239,7 @@ void AnalyticsPanel::updatePredictiveAnalytics() {
         return;
     }
     
-    // Trend projection
-    std::vector<double> history = {10.0, 12.0, 11.5, 13.0, 12.5};  // Placeholder
+    std::vector<double> history = {10.0, 12.0, 11.5, 13.0, 12.5};
     auto trend = m_predictiveAnalyzer->projectTrend(history, 5);
     m_trendProjectionLabel->setText(
         QString("Trend: %1 (confidence: %2%)\nProjected next 5 ticks: %3")
@@ -293,10 +248,9 @@ void AnalyticsPanel::updatePredictiveAnalytics() {
             .arg(trend.projectedValues.size())
     );
     
-    // Completion estimate
     if (m_controller->getMetrics()) {
-        int remaining = 10;  // Placeholder
-        std::vector<double> completionTimes = {5.0, 6.0, 5.5};  // Placeholder
+        int remaining = 10;
+        std::vector<double> completionTimes = {5.0, 6.0, 5.5};
         auto estimate = m_predictiveAnalyzer->estimateCompletionTime(remaining, completionTimes, 2.0);
         m_completionEstimateLabel->setText(
             QString("Remaining agents: %1\nEstimated time: %2 ticks\nConfidence: %3%")
@@ -306,12 +260,10 @@ void AnalyticsPanel::updatePredictiveAnalytics() {
         );
     }
     
-    // Bottleneck prediction
     m_bottleneckPredictionLabel->setText(
         "Analyzing edge utilization trends to predict future bottlenecks..."
     );
     
-    // Agent recommendation
     m_agentRecommendationLabel->setText(
         "Current agent count appears optimal based on efficiency metrics."
     );
@@ -332,15 +284,13 @@ void AnalyticsPanel::onExportPDF() {
     try {
         bool success = m_reportExporter->exportPDF(filepath, *m_controller,
             *m_flowAnalyzer, *m_policyAnalyzer, *m_predictiveAnalyzer);
-        
         if (success) {
-            AnimationHelper::showSuccessFeedback(this, "PDF report exported successfully!");
+            QMessageBox::information(this, "Success", "PDF report exported successfully!");
         } else {
-            AnimationHelper::showErrorFeedback(this, "Failed to export PDF report.");
+            QMessageBox::warning(this, "Error", "Failed to export PDF report.");
         }
     } catch (const std::exception& e) {
-        QString msg = ErrorHandler::getUserFriendlyMessage(e, "Exporting PDF");
-        AnimationHelper::showErrorFeedback(this, msg);
+        QMessageBox::critical(this, "Error", QString("Failed: %1").arg(e.what()));
     }
 }
 
@@ -358,15 +308,13 @@ void AnalyticsPanel::onExportPowerPoint() {
     
     try {
         bool success = m_reportExporter->exportPowerPoint(filepath, *m_controller, *m_flowAnalyzer);
-        
         if (success) {
-            AnimationHelper::showSuccessFeedback(this, "PowerPoint export completed!");
+            QMessageBox::information(this, "Success", "PowerPoint export completed!");
         } else {
-            AnimationHelper::showErrorFeedback(this, "Failed to export PowerPoint.");
+            QMessageBox::warning(this, "Error", "Failed to export PowerPoint.");
         }
     } catch (const std::exception& e) {
-        QString msg = ErrorHandler::getUserFriendlyMessage(e, "Exporting PowerPoint");
-        AnimationHelper::showErrorFeedback(this, msg);
+        QMessageBox::critical(this, "Error", QString("Failed: %1").arg(e.what()));
     }
 }
 
@@ -384,15 +332,13 @@ void AnalyticsPanel::onExportCSV() {
     
     try {
         bool success = m_reportExporter->exportCSV(filepath, *m_controller, *m_flowAnalyzer, true);
-        
         if (success) {
-            AnimationHelper::showSuccessFeedback(this, "CSV exported successfully!");
+            QMessageBox::information(this, "Success", "CSV exported successfully!");
         } else {
-            AnimationHelper::showErrorFeedback(this, "Failed to export CSV.");
+            QMessageBox::warning(this, "Error", "Failed to export CSV.");
         }
     } catch (const std::exception& e) {
-        QString msg = ErrorHandler::getUserFriendlyMessage(e, "Exporting CSV");
-        AnimationHelper::showErrorFeedback(this, msg);
+        QMessageBox::critical(this, "Error", QString("Failed: %1").arg(e.what()));
     }
 }
 
@@ -411,17 +357,14 @@ void AnalyticsPanel::onExportJSON() {
     try {
         QString json = m_reportExporter->exportJSON(*m_controller, *m_flowAnalyzer,
             *m_policyAnalyzer, *m_predictiveAnalyzer);
-        
         bool success = m_reportExporter->saveJSON(filepath, json);
-        
         if (success) {
-            AnimationHelper::showSuccessFeedback(this, "JSON API exported successfully!");
+            QMessageBox::information(this, "Success", "JSON API exported successfully!");
         } else {
-            AnimationHelper::showErrorFeedback(this, "Failed to export JSON.");
+            QMessageBox::warning(this, "Error", "Failed to export JSON.");
         }
     } catch (const std::exception& e) {
-        QString msg = ErrorHandler::getUserFriendlyMessage(e, "Exporting JSON");
-        AnimationHelper::showErrorFeedback(this, msg);
+        QMessageBox::critical(this, "Error", QString("Failed: %1").arg(e.what()));
     }
 }
 
@@ -433,4 +376,3 @@ void AnalyticsPanel::onTabChanged(int index) {
     Q_UNUSED(index);
     updateAnalytics();
 }
-

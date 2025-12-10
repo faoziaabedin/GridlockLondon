@@ -74,6 +74,15 @@ add_library(gridlock_adapters
 target_include_directories(gridlock_adapters PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/adapters)
 target_link_libraries(gridlock_adapters gridlock_core)
 
+# --- Analytics Library ---
+add_library(gridlock_analytics
+    analytics/TrafficFlowAnalyzer.cpp
+    analytics/PolicyEffectivenessAnalyzer.cpp
+    analytics/PredictiveAnalyzer.cpp
+    analytics/ReportExporter.cpp
+)
+target_include_directories(gridlock_analytics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/analytics)
+target_link_libraries(gridlock_analytics gridlock_core Qt6::Core Qt6::Widgets)
 # --- Qt UI ---
 add_executable(gridlock_ui
     ui/main.cpp
@@ -83,8 +92,10 @@ add_executable(gridlock_ui
     ui/MainWindow.h
     ui/MetricsPanel.cpp
     ui/MetricsPanel.h
+    ui/AnalyticsPanel.cpp
+    ui/AnalyticsPanel.h
 )
-target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters Qt6::Widgets Qt6::Core)
+target_link_libraries(gridlock_ui PRIVATE gridlock_core gridlock_adapters gridlock_patterns gridlock_analytics Qt6::Widgets Qt6::Core Qt6::Charts)
 
 # --- Tests ---
 add_executable(test_city tests/test_city.cpp)
