@@ -67,8 +67,9 @@ void MetricsPanel::setupUI() {
     layout->setSpacing(16);
     
     // Title
-    QLabel* titleLabel = new QLabel("📊 METRICS", this);
+    QLabel* titleLabel = new QLabel("METRICS", this);
     titleLabel->setObjectName("sectionTitle");
+    titleLabel->setStyleSheet("font-size: 18px; font-weight: 700; color: #fff; padding-bottom: 8px;");
     layout->addWidget(titleLabel);
     
     // Stat Cards
@@ -89,90 +90,92 @@ void MetricsPanel::setupUI() {
     QHBoxLayout* exportLayout = new QHBoxLayout();
     exportLayout->setSpacing(8);
     
-    m_exportImageButton = new QPushButton("💾 Save Chart as Image", this);
-    m_exportImageButton->setObjectName("secondaryButton");
+    m_exportImageButton = new QPushButton("Save Image", this);
+    m_exportImageButton->setToolTip("Save chart as image");
     connect(m_exportImageButton, &QPushButton::clicked, this, &MetricsPanel::onExportImage);
     exportLayout->addWidget(m_exportImageButton);
     
-    m_copyButton = new QPushButton("📋 Copy to Clipboard", this);
-    m_copyButton->setObjectName("secondaryButton");
+    m_copyButton = new QPushButton("Copy Data", this);
+    m_copyButton->setToolTip("Copy data to clipboard");
     connect(m_copyButton, &QPushButton::clicked, this, &MetricsPanel::onCopyToClipboard);
     exportLayout->addWidget(m_copyButton);
     
-    m_shareButton = new QPushButton("🔗 Share", this);
-    m_shareButton->setObjectName("secondaryButton");
+    m_shareButton = new QPushButton("Share", this);
+    m_shareButton->setToolTip("Share results");
     connect(m_shareButton, &QPushButton::clicked, this, &MetricsPanel::onShareChart);
     exportLayout->addWidget(m_shareButton);
     
     layout->addLayout(exportLayout);
-    layout->addStretch();
 }
 
 void MetricsPanel::setupStatCards() {
     m_statCardsWidget = new QWidget(this);
     QHBoxLayout* cardsLayout = new QHBoxLayout(m_statCardsWidget);
     cardsLayout->setContentsMargins(0, 0, 0, 0);
-    cardsLayout->setSpacing(12);
+    cardsLayout->setSpacing(10);
     
-    // Card 1: Avg Time
+    // Card 1: Avg Time - Sage green accent
     QWidget* card1 = new QWidget(this);
     card1->setObjectName("statCard");
+    card1->setStyleSheet("background-color: #3d4a38; border-radius: 10px; border: 1px solid #5a6b52;");
     QVBoxLayout* card1Layout = new QVBoxLayout(card1);
-    card1Layout->setContentsMargins(16, 12, 16, 12);
-    card1Layout->setSpacing(4);
+    card1Layout->setContentsMargins(14, 10, 14, 10);
+    card1Layout->setSpacing(3);
     
-    m_avgTimeCard = new QLabel("📊 Avg Time", card1);
-    m_avgTimeCard->setStyleSheet("color: #CCCCCC; font-size: 12px;");
+    m_avgTimeCard = new QLabel("Avg Time", card1);
+    m_avgTimeCard->setStyleSheet("color: #a8c4a0; font-size: 11px; font-weight: 500; background: transparent;");
     card1Layout->addWidget(m_avgTimeCard);
     
     m_avgTimeValue = new QLabel("0.0s", card1);
-    m_avgTimeValue->setStyleSheet("color: #FFFFFF; font-size: 32px; font-weight: bold;");
+    m_avgTimeValue->setStyleSheet("color: #e8f5e0; font-size: 24px; font-weight: bold; background: transparent;");
     card1Layout->addWidget(m_avgTimeValue);
     
     m_avgTimeTrend = new QLabel("—", card1);
-    m_avgTimeTrend->setStyleSheet("color: #CCCCCC; font-size: 11px;");
+    m_avgTimeTrend->setStyleSheet("color: #8aad82; font-size: 10px; background: transparent;");
     card1Layout->addWidget(m_avgTimeTrend);
     
     cardsLayout->addWidget(card1);
     
-    // Card 2: Completed
+    // Card 2: Completed - Warm amber accent
     QWidget* card2 = new QWidget(this);
     card2->setObjectName("statCard");
+    card2->setStyleSheet("background-color: #4a4238; border-radius: 10px; border: 1px solid #6b5d4a;");
     QVBoxLayout* card2Layout = new QVBoxLayout(card2);
-    card2Layout->setContentsMargins(16, 12, 16, 12);
-    card2Layout->setSpacing(4);
+    card2Layout->setContentsMargins(14, 10, 14, 10);
+    card2Layout->setSpacing(3);
     
-    m_completedCard = new QLabel("🚗 Completed", card2);
-    m_completedCard->setStyleSheet("color: #CCCCCC; font-size: 12px;");
+    m_completedCard = new QLabel("Completed", card2);
+    m_completedCard->setStyleSheet("color: #d4c4a8; font-size: 11px; font-weight: 500; background: transparent;");
     card2Layout->addWidget(m_completedCard);
     
     m_completedValue = new QLabel("0", card2);
-    m_completedValue->setStyleSheet("color: #FFFFFF; font-size: 32px; font-weight: bold;");
+    m_completedValue->setStyleSheet("color: #fff5e0; font-size: 24px; font-weight: bold; background: transparent;");
     card2Layout->addWidget(m_completedValue);
     
     m_completedTrend = new QLabel("—", card2);
-    m_completedTrend->setStyleSheet("color: #CCCCCC; font-size: 11px;");
+    m_completedTrend->setStyleSheet("color: #b8a888; font-size: 10px; background: transparent;");
     card2Layout->addWidget(m_completedTrend);
     
     cardsLayout->addWidget(card2);
     
-    // Card 3: Max Load
+    // Card 3: Max Load - Terracotta accent
     QWidget* card3 = new QWidget(this);
     card3->setObjectName("statCard");
+    card3->setStyleSheet("background-color: #4a3d38; border-radius: 10px; border: 1px solid #6b584a;");
     QVBoxLayout* card3Layout = new QVBoxLayout(card3);
-    card3Layout->setContentsMargins(16, 12, 16, 12);
-    card3Layout->setSpacing(4);
+    card3Layout->setContentsMargins(14, 10, 14, 10);
+    card3Layout->setSpacing(3);
     
-    m_maxLoadCard = new QLabel("🚦 Max Load", card3);
-    m_maxLoadCard->setStyleSheet("color: #CCCCCC; font-size: 12px;");
+    m_maxLoadCard = new QLabel("Max Load", card3);
+    m_maxLoadCard->setStyleSheet("color: #d4b8a8; font-size: 11px; font-weight: 500; background: transparent;");
     card3Layout->addWidget(m_maxLoadCard);
     
     m_maxLoadValue = new QLabel("0", card3);
-    m_maxLoadValue->setStyleSheet("color: #FFFFFF; font-size: 32px; font-weight: bold;");
+    m_maxLoadValue->setStyleSheet("color: #ffe8e0; font-size: 24px; font-weight: bold; background: transparent;");
     card3Layout->addWidget(m_maxLoadValue);
     
     m_maxLoadTrend = new QLabel("—", card3);
-    m_maxLoadTrend->setStyleSheet("color: #CCCCCC; font-size: 11px;");
+    m_maxLoadTrend->setStyleSheet("color: #b89888; font-size: 10px; background: transparent;");
     card3Layout->addWidget(m_maxLoadTrend);
     
     cardsLayout->addWidget(card3);
@@ -181,139 +184,183 @@ void MetricsPanel::setupStatCards() {
 void MetricsPanel::setupCharts() {
     // Trip Time Line Chart
     m_tripTimeChart = new QChart();
-    m_tripTimeChart->setTitle("Trip Time Over Simulation");
-    m_tripTimeChart->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_tripTimeChart->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
-    m_tripTimeChart->setPlotAreaBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_tripTimeChart->setTitle("Trip Time");
+    m_tripTimeChart->setTitleBrush(QBrush(QColor(245, 240, 232)));
+    m_tripTimeChart->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
+    m_tripTimeChart->setPlotAreaBackgroundBrush(QBrush(QColor(45, 42, 38)));
     m_tripTimeChart->setPlotAreaBackgroundVisible(true);
+    m_tripTimeChart->setMargins(QMargins(5, 5, 10, 5));
+    m_tripTimeChart->legend()->hide();
     
     m_tripTimeSeries = new QLineSeries();
     m_tripTimeSeries->setName("Trip Time");
-    m_tripTimeSeries->setPen(QPen(QColor(6, 182, 212), 2)); // Cyan
-    m_tripTimeSeries->setBrush(QBrush(QColor(6, 182, 212, 50))); // Semi-transparent fill
+    m_tripTimeSeries->setPen(QPen(QColor(120, 180, 100), 2));
     
-    // Create area series for gradient fill
-    QAreaSeries* areaSeries = new QAreaSeries(m_tripTimeSeries);
-    areaSeries->setColor(QColor(6, 182, 212));
-    areaSeries->setBorderColor(QColor(6, 182, 212));
-    
-    m_tripTimeChart->addSeries(areaSeries);
+    m_tripTimeChart->addSeries(m_tripTimeSeries);
     
     m_tripTimeAxisX = new QValueAxis();
     m_tripTimeAxisX->setTitleText("Tick");
-    m_tripTimeAxisX->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_tripTimeAxisX->setLabelsColor(QColor(204, 204, 204));
-    m_tripTimeAxisX->setGridLineColor(QColor(62, 62, 66));
-    m_tripTimeAxisX->setLinePenColor(QColor(62, 62, 66));
-    m_tripTimeAxisX->setRange(0, 100);
+    m_tripTimeAxisX->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_tripTimeAxisX->setLabelsColor(QColor(160, 148, 132));
+    m_tripTimeAxisX->setGridLineColor(QColor(74, 69, 61));
+    m_tripTimeAxisX->setLinePenColor(QColor(74, 69, 61));
+    m_tripTimeAxisX->setRange(0, 50);
+    m_tripTimeAxisX->setTickCount(6);
+    m_tripTimeAxisX->setLabelFormat("%d");
     
     m_tripTimeAxisY = new QValueAxis();
-    m_tripTimeAxisY->setTitleText("Time (steps)");
-    m_tripTimeAxisY->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_tripTimeAxisY->setLabelsColor(QColor(204, 204, 204));
-    m_tripTimeAxisY->setGridLineColor(QColor(62, 62, 66));
-    m_tripTimeAxisY->setLinePenColor(QColor(62, 62, 66));
+    m_tripTimeAxisY->setTitleText("Time");
+    m_tripTimeAxisY->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_tripTimeAxisY->setLabelsColor(QColor(160, 148, 132));
+    m_tripTimeAxisY->setGridLineColor(QColor(74, 69, 61));
+    m_tripTimeAxisY->setLinePenColor(QColor(74, 69, 61));
     m_tripTimeAxisY->setRange(0, 20);
+    m_tripTimeAxisY->setTickCount(5);
+    m_tripTimeAxisY->setLabelFormat("%d");
     
     m_tripTimeChart->addAxis(m_tripTimeAxisX, Qt::AlignBottom);
     m_tripTimeChart->addAxis(m_tripTimeAxisY, Qt::AlignLeft);
-    areaSeries->attachAxis(m_tripTimeAxisX);
-    areaSeries->attachAxis(m_tripTimeAxisY);
+    m_tripTimeSeries->attachAxis(m_tripTimeAxisX);
+    m_tripTimeSeries->attachAxis(m_tripTimeAxisY);
     
     m_tripTimeChartView = new QChartView(m_tripTimeChart, this);
     m_tripTimeChartView->setRenderHint(QPainter::Antialiasing);
-    m_tripTimeChartView->setMinimumHeight(200);
-    m_tripTimeChartView->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_tripTimeChartView->setMinimumHeight(180);
+    m_tripTimeChartView->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
     applyChartTheme(m_tripTimeChart);
     
-    // Throughput Bar Chart
+    // Throughput Line Chart (changed from bar)
     m_throughputChart = new QChart();
-    m_throughputChart->setTitle("Agents Completed Per Interval");
-    m_throughputChart->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_throughputChart->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
-    m_throughputChart->setPlotAreaBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_throughputChart->setTitle("Throughput");
+    m_throughputChart->setTitleBrush(QBrush(QColor(245, 240, 232)));
+    m_throughputChart->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
+    m_throughputChart->setPlotAreaBackgroundBrush(QBrush(QColor(45, 42, 38)));
     m_throughputChart->setPlotAreaBackgroundVisible(true);
+    m_throughputChart->setMargins(QMargins(5, 5, 10, 5));
+    m_throughputChart->legend()->hide();
     
-    m_throughputSeries = new QBarSeries();
-    m_throughputChart->addSeries(m_throughputSeries);
+    // Create a line series for throughput instead of bar
+    m_throughputLineSeries = new QLineSeries();
+    m_throughputLineSeries->setName("Completed");
+    m_throughputLineSeries->setPen(QPen(QColor(210, 160, 90), 2)); // Warm amber
+    m_throughputChart->addSeries(m_throughputLineSeries);
     
-    m_throughputAxisX = new QBarCategoryAxis();
-    m_throughputAxisX->setTitleText("Interval");
-    m_throughputAxisX->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_throughputAxisX->setLabelsColor(QColor(204, 204, 204));
-    m_throughputAxisX->setGridLineColor(QColor(62, 62, 66));
-    m_throughputAxisX->setLinePenColor(QColor(62, 62, 66));
+    m_throughputLineAxisX = new QValueAxis();
+    m_throughputLineAxisX->setTitleText("Tick");
+    m_throughputLineAxisX->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_throughputLineAxisX->setLabelsColor(QColor(160, 148, 132));
+    m_throughputLineAxisX->setGridLineColor(QColor(74, 69, 61));
+    m_throughputLineAxisX->setLinePenColor(QColor(74, 69, 61));
+    m_throughputLineAxisX->setRange(0, 50);
+    m_throughputLineAxisX->setTickCount(6);
+    m_throughputLineAxisX->setLabelFormat("%d");
     
-    m_throughputAxisY = new QValueAxis();
-    m_throughputAxisY->setTitleText("Agents");
-    m_throughputAxisY->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_throughputAxisY->setLabelsColor(QColor(204, 204, 204));
-    m_throughputAxisY->setGridLineColor(QColor(62, 62, 66));
-    m_throughputAxisY->setLinePenColor(QColor(62, 62, 66));
-    m_throughputAxisY->setRange(0, 10);
+    m_throughputLineAxisY = new QValueAxis();
+    m_throughputLineAxisY->setTitleText("Count");
+    m_throughputLineAxisY->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_throughputLineAxisY->setLabelsColor(QColor(160, 148, 132));
+    m_throughputLineAxisY->setGridLineColor(QColor(74, 69, 61));
+    m_throughputLineAxisY->setLinePenColor(QColor(74, 69, 61));
+    m_throughputLineAxisY->setRange(0, 10);
+    m_throughputLineAxisY->setTickCount(5);
+    m_throughputLineAxisY->setLabelFormat("%d");
     
-    m_throughputChart->addAxis(m_throughputAxisX, Qt::AlignBottom);
-    m_throughputChart->addAxis(m_throughputAxisY, Qt::AlignLeft);
-    m_throughputSeries->attachAxis(m_throughputAxisX);
-    m_throughputSeries->attachAxis(m_throughputAxisY);
+    m_throughputChart->addAxis(m_throughputLineAxisX, Qt::AlignBottom);
+    m_throughputChart->addAxis(m_throughputLineAxisY, Qt::AlignLeft);
+    m_throughputLineSeries->attachAxis(m_throughputLineAxisX);
+    m_throughputLineSeries->attachAxis(m_throughputLineAxisY);
     
     m_throughputChartView = new QChartView(m_throughputChart, this);
     m_throughputChartView->setRenderHint(QPainter::Antialiasing);
-    m_throughputChartView->setMinimumHeight(200);
-    m_throughputChartView->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_throughputChartView->setMinimumHeight(180);
+    m_throughputChartView->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
     applyChartTheme(m_throughputChart);
     
-    // Congestion Heat Map (Radial/Donut Chart)
+    // Congestion Line Chart (changed from pie)
     m_congestionChart = new QChart();
-    m_congestionChart->setTitle("Max Edge Load Over Time");
-    m_congestionChart->setTitleBrush(QBrush(QColor(204, 204, 204)));
-    m_congestionChart->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
-    m_congestionChart->setPlotAreaBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_congestionChart->setTitle("Max Load");
+    m_congestionChart->setTitleBrush(QBrush(QColor(245, 240, 232)));
+    m_congestionChart->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
+    m_congestionChart->setPlotAreaBackgroundBrush(QBrush(QColor(45, 42, 38)));
     m_congestionChart->setPlotAreaBackgroundVisible(true);
+    m_congestionChart->setMargins(QMargins(5, 5, 10, 5));
+    m_congestionChart->legend()->hide();
     
-    m_congestionSeries = new QPieSeries();
-    m_congestionSeries->setHoleSize(0.5); // Donut chart
-    m_congestionChart->addSeries(m_congestionSeries);
+    // Create line series for congestion
+    m_congestionLineSeries = new QLineSeries();
+    m_congestionLineSeries->setName("Max Load");
+    m_congestionLineSeries->setPen(QPen(QColor(200, 120, 100), 2)); // Terracotta
+    m_congestionChart->addSeries(m_congestionLineSeries);
+    
+    m_congestionLineAxisX = new QValueAxis();
+    m_congestionLineAxisX->setTitleText("Tick");
+    m_congestionLineAxisX->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_congestionLineAxisX->setLabelsColor(QColor(160, 148, 132));
+    m_congestionLineAxisX->setGridLineColor(QColor(74, 69, 61));
+    m_congestionLineAxisX->setLinePenColor(QColor(74, 69, 61));
+    m_congestionLineAxisX->setRange(0, 50);
+    m_congestionLineAxisX->setTickCount(6);
+    m_congestionLineAxisX->setLabelFormat("%d");
+    
+    m_congestionLineAxisY = new QValueAxis();
+    m_congestionLineAxisY->setTitleText("Load");
+    m_congestionLineAxisY->setTitleBrush(QBrush(QColor(180, 168, 152)));
+    m_congestionLineAxisY->setLabelsColor(QColor(160, 148, 132));
+    m_congestionLineAxisY->setGridLineColor(QColor(74, 69, 61));
+    m_congestionLineAxisY->setLinePenColor(QColor(74, 69, 61));
+    m_congestionLineAxisY->setRange(0, 10);
+    m_congestionLineAxisY->setTickCount(5);
+    m_congestionLineAxisY->setLabelFormat("%d");
+    
+    m_congestionChart->addAxis(m_congestionLineAxisX, Qt::AlignBottom);
+    m_congestionChart->addAxis(m_congestionLineAxisY, Qt::AlignLeft);
+    m_congestionLineSeries->attachAxis(m_congestionLineAxisX);
+    m_congestionLineSeries->attachAxis(m_congestionLineAxisY);
     
     m_congestionChartView = new QChartView(m_congestionChart, this);
     m_congestionChartView->setRenderHint(QPainter::Antialiasing);
-    m_congestionChartView->setMinimumHeight(200);
-    m_congestionChartView->setBackgroundBrush(QBrush(QColor(30, 30, 30)));
+    m_congestionChartView->setMinimumHeight(180);
+    m_congestionChartView->setBackgroundBrush(QBrush(QColor(37, 34, 32)));
     applyChartTheme(m_congestionChart);
 }
 
 void MetricsPanel::setupComparisonTable() {
     m_comparisonTable = new QTableWidget(4, 3, this);
-    m_comparisonTable->setHorizontalHeaderLabels(QStringList() << "Metric" << "Shortest Path" << "Congestion-Aware");
+    m_comparisonTable->setHorizontalHeaderLabels(QStringList() << "Metric" << "SP" << "CA");
     m_comparisonTable->verticalHeader()->setVisible(false);
     m_comparisonTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_comparisonTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_comparisonTable->setAlternatingRowColors(true);
+    m_comparisonTable->horizontalHeader()->setStretchLastSection(true);
+    m_comparisonTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_comparisonTable->setStyleSheet(
         "QTableWidget {"
-        "background-color: #1E1E1E;"
-        "color: #CCCCCC;"
-        "border: 1px solid #3E3E42;"
+        "background-color: #352f2a;"
+        "color: #f5f0e8;"
+        "border: 1px solid #4a453d;"
         "border-radius: 8px;"
-        "gridline-color: #3E3E42;"
+        "gridline-color: #4a453d;"
         "}"
         "QTableWidget::item {"
-        "padding: 8px;"
+        "padding: 6px;"
         "}"
         "QTableWidget::item:selected {"
-        "background-color: #007ACC;"
+        "background-color: #5a8040;"
+        "}"
+        "QTableWidget::item:alternate {"
+        "background-color: #3d3832;"
         "}"
         "QHeaderView::section {"
-        "background-color: #252526;"
-        "color: #CCCCCC;"
-        "padding: 8px;"
+        "background-color: #252220;"
+        "color: #f5f0e8;"
+        "padding: 6px;"
         "border: none;"
-        "border-bottom: 1px solid #3E3E42;"
+        "border-bottom: 1px solid #4a453d;"
         "font-weight: 600;"
         "}"
     );
     
-    QStringList rowLabels = {"Avg Trip Time", "Total Throughput", "Max Edge Load", "Efficiency Score"};
+    QStringList rowLabels = {"Avg Trip Time", "Throughput", "Max Load", "Efficiency"};
     for (int i = 0; i < 4; ++i) {
         QTableWidgetItem* item = new QTableWidgetItem(rowLabels[i]);
         item->setFlags(item->flags() & ~Qt::ItemIsEditable);
@@ -326,8 +373,6 @@ void MetricsPanel::setupComparisonTable() {
             m_comparisonTable->setItem(i, j, valueItem);
         }
     }
-    
-    m_comparisonTable->resizeColumnsToContents();
 }
 
 void MetricsPanel::applyChartTheme(QChart* chart) {
@@ -452,62 +497,77 @@ void MetricsPanel::updateCharts(double avgTime, int completed, int maxLoad) {
         m_tripTimeSeries->append(point);
     }
     
-    // Update axis ranges
+    // Update axis ranges for trip time
     if (!m_tripTimeData.isEmpty()) {
-        double minX = m_tripTimeData.first().x();
         double maxX = m_tripTimeData.last().x();
-        double minY = 0;
         double maxY = 20;
         
         for (const QPointF& point : m_tripTimeData) {
-            minY = qMin(minY, point.y());
             maxY = qMax(maxY, point.y());
         }
         
-        if (maxY > minY) {
-            m_tripTimeAxisY->setRange(0, maxY * 1.1);
-        }
-        m_tripTimeAxisX->setRange(qMax(0.0, maxX - 100), maxX);
+        m_tripTimeAxisY->setRange(0, maxY * 1.1);
+        m_tripTimeAxisX->setRange(qMax(0.0, maxX - 50), qMax(50.0, maxX));
     }
     
-    // Update Throughput Bar Chart
-    static int intervalCounter = 0;
-    intervalCounter++;
+    // Update Throughput Line Chart
+    static QVector<QPointF> throughputLineData;
+    throughputLineData.append(QPointF(currentTick, completed));
     
-    if (intervalCounter >= INTERVAL_SIZE) {
-        m_throughputData.append(completed);
-        intervalCounter = 0;
-        
-        if (m_throughputData.size() > 10) {
-            m_throughputData.removeFirst();
-        }
-        
-        // Update bar series
-        m_throughputSeries->clear();
-        QStringList categories;
-        
-        for (int i = 0; i < m_throughputData.size(); ++i) {
-            QBarSet* barSet = new QBarSet(QString::number(i + 1));
-            barSet->append(m_throughputData[i]);
-            
-            // Color based on value
-            QColor barColor = getGradientColor(m_throughputData[i], 0, 10);
-            barSet->setColor(barColor);
-            
-            m_throughputSeries->append(barSet);
-            categories << QString::number(i + 1);
-        }
-        
-        m_throughputAxisX->setCategories(categories);
-        
-        if (!m_throughputData.isEmpty()) {
-            int maxVal = *std::max_element(m_throughputData.begin(), m_throughputData.end());
-            m_throughputAxisY->setRange(0, qMax(10, maxVal + 2));
-        }
+    if (throughputLineData.size() > MAX_HISTORY) {
+        throughputLineData.removeFirst();
     }
     
-    // Update Congestion Heat Map
-    // Categorize max load into levels (0-5)
+    m_throughputLineSeries->clear();
+    for (const QPointF& point : throughputLineData) {
+        m_throughputLineSeries->append(point);
+    }
+    
+    // Update axis ranges for throughput
+    if (!throughputLineData.isEmpty()) {
+        double maxX = throughputLineData.last().x();
+        int maxY = 10;
+        
+        for (const QPointF& point : throughputLineData) {
+            maxY = qMax(maxY, (int)point.y());
+        }
+        
+        m_throughputLineAxisY->setRange(0, maxY + 2);
+        m_throughputLineAxisX->setRange(qMax(0.0, maxX - 50), qMax(50.0, maxX));
+    }
+    
+    // Update Congestion Line Chart  
+    static QVector<QPointF> congestionLineData;
+    congestionLineData.append(QPointF(currentTick, maxLoad));
+    
+    if (congestionLineData.size() > MAX_HISTORY) {
+        congestionLineData.removeFirst();
+    }
+    
+    m_congestionLineSeries->clear();
+    for (const QPointF& point : congestionLineData) {
+        m_congestionLineSeries->append(point);
+    }
+    
+    // Update axis ranges for congestion
+    if (!congestionLineData.isEmpty()) {
+        double maxX = congestionLineData.last().x();
+        int maxY = 10;
+        
+        for (const QPointF& point : congestionLineData) {
+            maxY = qMax(maxY, (int)point.y());
+        }
+        
+        m_congestionLineAxisY->setRange(0, maxY + 2);
+        m_congestionLineAxisX->setRange(qMax(0.0, maxX - 50), qMax(50.0, maxX));
+    }
+    
+    // Keep old pie chart code but don't use it (for compatibility)
+    Q_UNUSED(m_throughputSeries);
+    Q_UNUSED(m_congestionSeries);
+    
+    // Old pie chart update code - disabled
+    /*
     int level = qBound(0, maxLoad, 5);
     m_congestionLevels.append(level);
     
@@ -515,7 +575,6 @@ void MetricsPanel::updateCharts(double avgTime, int completed, int maxLoad) {
         m_congestionLevels.removeFirst();
     }
     
-    // Count occurrences of each level
     QVector<int> levelCounts(6, 0);
     for (int l : m_congestionLevels) {
         levelCounts[l]++;
@@ -524,27 +583,17 @@ void MetricsPanel::updateCharts(double avgTime, int completed, int maxLoad) {
     m_congestionSeries->clear();
     
     QVector<QColor> levelColors = {
-        QColor(59, 130, 246),   // Level 1: Blue
-        QColor(6, 182, 212),    // Level 2: Cyan
-        QColor(245, 158, 11),   // Level 3: Yellow
-        QColor(249, 115, 22),   // Level 4: Orange
-        QColor(239, 68, 68),    // Level 5: Red
-        QColor(139, 0, 0)       // Level 6: Dark Red
+        QColor(59, 130, 246),
+        QColor(6, 182, 212),
+        QColor(245, 158, 11),
+        QColor(249, 115, 22),
+        QColor(239, 68, 68),
+        QColor(139, 0, 0)
     };
     
     QStringList levelLabels = {"Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6"};
     
-    for (int i = 0; i < 6; ++i) {
-        if (levelCounts[i] > 0) {
-            QPieSlice* slice = m_congestionSeries->append(
-                QString("%1 (%2)").arg(levelLabels[i]).arg(levelCounts[i]),
-                levelCounts[i]
-            );
-            slice->setColor(levelColors[i]);
-            slice->setLabelVisible(true);
-            slice->setLabelColor(QColor(204, 204, 204));
-        }
-    }
+    */
 }
 
 void MetricsPanel::updateComparisonTable() {

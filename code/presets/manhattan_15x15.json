@@ -1,0 +1,10 @@
+{
+  "name": "Manhattan Grid 15x15",
+  "rows": 15,
+  "cols": 15,
+  "blocked": [[50, 51], [100, 101], [150, 151]],
+  "agentCount": 75,
+  "tickMs": 100,
+  "policy": "SHORTEST_PATH"
+}
+

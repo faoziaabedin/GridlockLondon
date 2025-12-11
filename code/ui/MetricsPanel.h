@@ -84,10 +84,16 @@ private:
     QBarSeries* m_throughputSeries;
     QBarCategoryAxis* m_throughputAxisX;
     QValueAxis* m_throughputAxisY;
+    QLineSeries* m_throughputLineSeries;
+    QValueAxis* m_throughputLineAxisX;
+    QValueAxis* m_throughputLineAxisY;
     
     QChartView* m_congestionChartView;
     QChart* m_congestionChart;
     QPieSeries* m_congestionSeries;
+    QLineSeries* m_congestionLineSeries;
+    QValueAxis* m_congestionLineAxisX;
+    QValueAxis* m_congestionLineAxisY;
     
     // Comparison Table
     QTableWidget* m_comparisonTable;

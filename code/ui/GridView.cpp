@@ -1,3 +1,4 @@
+// code/ui/GridView.cpp
 #include "GridView.h"
 #include "../core/SimulationController.h"
 #include "../core/City.h"
@@ -20,9 +21,10 @@
 #include <QScrollBar>
 #include <QtMath>
 #include <algorithm>
+#include <cmath>
 
 // ============================================================================
-// NodeGraphicsItem Implementation
+// NodeGraphicsItem Implementation - Traffic Intersection Style
 // ============================================================================
 
 NodeGraphicsItem::NodeGraphicsItem(NodeId id, const QPointF& position, QGraphicsItem* parent)
@@ -33,7 +35,7 @@ NodeGraphicsItem::NodeGraphicsItem(NodeId id, const QPointF& position, QGraphics
 }
 
 QRectF NodeGraphicsItem::boundingRect() const {
-    qreal margin = GLOW_RADIUS;
+    qreal margin = 20;
     return QRectF(-margin, -margin, 2 * margin, 2 * margin);
 }
 
@@ -43,31 +45,33 @@ void NodeGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     
     painter->setRenderHint(QPainter::Antialiasing);
     
-    // Glow effect
-    QRadialGradient glowGradient(0, 0, GLOW_RADIUS);
-    glowGradient.setColorAt(0, QColor(100, 150, 255, 80));
-    glowGradient.setColorAt(0.5, QColor(100, 150, 255, 40));
-    glowGradient.setColorAt(1, QColor(100, 150, 255, 0));
+    // Draw intersection circle (like a roundabout)
+    qreal radius = 12.0;
     
-    painter->setBrush(glowGradient);
+    // Outer ring - asphalt color
+    painter->setBrush(QColor(60, 60, 65));
+    painter->setPen(QPen(QColor(80, 80, 85), 2));
+    painter->drawEllipse(QRectF(-radius, -radius, 2 * radius, 2 * radius));
+    
+    // Inner circle - lighter center
+    qreal innerRadius = 6.0;
+    QRadialGradient centerGrad(0, 0, innerRadius);
+    centerGrad.setColorAt(0, QColor(100, 100, 105));
+    centerGrad.setColorAt(1, QColor(70, 70, 75));
+    painter->setBrush(centerGrad);
     painter->setPen(Qt::NoPen);
-    painter->drawEllipse(QRectF(-GLOW_RADIUS, -GLOW_RADIUS, 2 * GLOW_RADIUS, 2 * GLOW_RADIUS));
+    painter->drawEllipse(QRectF(-innerRadius, -innerRadius, 2 * innerRadius, 2 * innerRadius));
     
-    // Node circle
-    QRadialGradient nodeGradient(0, 0, NODE_RADIUS);
-    nodeGradient.setColorAt(0, QColor(150, 200, 255));
-    nodeGradient.setColorAt(1, QColor(100, 150, 255));
-    
-    painter->setBrush(nodeGradient);
-    painter->setPen(QPen(QColor(200, 220, 255), 1.5));
-    painter->drawEllipse(QRectF(-NODE_RADIUS, -NODE_RADIUS, 2 * NODE_RADIUS, 2 * NODE_RADIUS));
+    // Small center dot
+    painter->setBrush(QColor(120, 120, 125));
+    painter->drawEllipse(QRectF(-2, -2, 4, 4));
     
     // Label
     if (m_showLabel) {
-        painter->setPen(QColor(200, 220, 255));
-        QFont font("Inter", 8, QFont::Medium);
+        painter->setPen(QColor(200, 200, 200));
+        QFont font("SF Pro Display", 9, QFont::Medium);
         painter->setFont(font);
-        QRectF textRect(-20, -NODE_RADIUS - 15, 40, 12);
+        QRectF textRect(-15, -radius - 18, 30, 14);
         painter->drawText(textRect, Qt::AlignCenter, QString::number(m_nodeId));
     }
 }
@@ -78,24 +82,25 @@ void NodeGraphicsItem::setShowLabel(bool show) {
 }
 
 // ============================================================================
-// EdgeGraphicsItem Implementation
+// EdgeGraphicsItem Implementation - Road Style
 // ============================================================================
 
 EdgeGraphicsItem::EdgeGraphicsItem(EdgeId id, NodeId from, NodeId to,
                                    const QPointF& fromPos, const QPointF& toPos,
                                    QGraphicsItem* parent)
     : QGraphicsObject(parent), m_edgeId(id), m_fromNode(from), m_toNode(to),
-      m_fromPos(fromPos), m_toPos(toPos), m_currentColor(QColor(59, 130, 246)), // Cool blue
+      m_fromPos(fromPos), m_toPos(toPos), m_currentColor(QColor(70, 70, 75)),
       m_targetColor(m_currentColor), m_occupancy(0), m_capacity(1), m_length(1.0), m_hovered(false) {
     setAcceptHoverEvents(true);
     setZValue(5); // Edges below nodes and agents
 }
 
 QRectF EdgeGraphicsItem::boundingRect() const {
-    QPointF topLeft(std::min(m_fromPos.x(), m_toPos.x()) - EDGE_WIDTH,
-                    std::min(m_fromPos.y(), m_toPos.y()) - EDGE_WIDTH);
-    QPointF bottomRight(std::max(m_fromPos.x(), m_toPos.x()) + EDGE_WIDTH,
-                       std::max(m_fromPos.y(), m_toPos.y()) + EDGE_WIDTH);
+    qreal margin = 15;
+    QPointF topLeft(std::min(m_fromPos.x(), m_toPos.x()) - margin,
+                    std::min(m_fromPos.y(), m_toPos.y()) - margin);
+    QPointF bottomRight(std::max(m_fromPos.x(), m_toPos.x()) + margin,
+                       std::max(m_fromPos.y(), m_toPos.y()) + margin);
     return QRectF(topLeft, bottomRight);
 }
 
@@ -105,15 +110,36 @@ void EdgeGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     
     painter->setRenderHint(QPainter::Antialiasing);
     
-    QPen pen;
-    if (m_hovered) {
-        pen = QPen(QColor(255, 255, 255, 200), EDGE_WIDTH + 2);
-    } else {
-        pen = QPen(m_currentColor, EDGE_WIDTH);
+    // Road width
+    qreal roadWidth = m_hovered ? 14.0 : 12.0;
+    
+    // Calculate direction
+    QLineF line(m_fromPos, m_toPos);
+    
+    // Draw road base (dark asphalt)
+    QPen roadPen(QColor(50, 50, 55), roadWidth, Qt::SolidLine, Qt::RoundCap);
+    painter->setPen(roadPen);
+    painter->drawLine(m_fromPos, m_toPos);
+    
+    // Draw road surface with congestion color
+    QPen surfacePen(m_currentColor, roadWidth - 4, Qt::SolidLine, Qt::RoundCap);
+    painter->setPen(surfacePen);
+    painter->drawLine(m_fromPos, m_toPos);
+    
+    // Draw center lane marking (dashed white/yellow line)
+    if (line.length() > 30) {
+        QPen lanePen(QColor(255, 200, 50, 150), 1.5, Qt::DashLine);
+        lanePen.setDashPattern({4, 6});
+        painter->setPen(lanePen);
+        painter->drawLine(m_fromPos, m_toPos);
     }
     
-    painter->setPen(pen);
-    painter->drawLine(m_fromPos, m_toPos);
+    // Highlight on hover
+    if (m_hovered) {
+        QPen hoverPen(QColor(255, 255, 255, 80), roadWidth + 4, Qt::SolidLine, Qt::RoundCap);
+        painter->setPen(hoverPen);
+        painter->drawLine(m_fromPos, m_toPos);
+    }
 }
 
 void EdgeGraphicsItem::setColor(const QColor& color) {
@@ -128,35 +154,41 @@ void EdgeGraphicsItem::setCongestion(int occupancy, int capacity, double length)
     m_capacity = capacity;
     m_length = length;
     
-    // Calculate congestion level
+    // Calculate congestion level and set color
     double ratio = capacity > 0 ? static_cast<double>(occupancy) / capacity : 0.0;
     
     if (ratio == 0.0) {
-        m_targetColor = QColor(59, 130, 246); // Cool blue - Empty
+        m_targetColor = QColor(70, 80, 70); // Dark greenish gray - empty road
     } else if (ratio < 0.3) {
-        m_targetColor = QColor(6, 182, 212); // Cyan - Light traffic
-    } else if (ratio < 0.7) {
-        m_targetColor = QColor(245, 158, 11); // Yellow - Medium
-    } else if (ratio < 1.0) {
-        m_targetColor = QColor(249, 115, 22); // Orange - Heavy
+        m_targetColor = QColor(34, 139, 34); // Forest green - light traffic
+    } else if (ratio < 0.6) {
+        m_targetColor = QColor(218, 165, 32); // Goldenrod - moderate
+    } else if (ratio < 0.85) {
+        m_targetColor = QColor(255, 140, 0); // Dark orange - heavy
     } else {
-        m_targetColor = QColor(239, 68, 68); // Red - Gridlock
+        m_targetColor = QColor(220, 20, 60); // Crimson - gridlock
     }
 }
 
 QString EdgeGraphicsItem::tooltipText() const {
     double ratio = m_capacity > 0 ? static_cast<double>(m_occupancy) / m_capacity * 100.0 : 0.0;
-    return QString("Edge %1: Node %2 → Node %3\n"
-                   "Capacity: %4 vehicles\n"
-                   "Current: %5 vehicles (%6%)\n"
-                   "Length: %7 units")
+    QString status;
+    if (ratio == 0) status = "🟢 Clear";
+    else if (ratio < 30) status = "🟢 Light Traffic";
+    else if (ratio < 60) status = "🟡 Moderate";
+    else if (ratio < 85) status = "🟠 Heavy";
+    else status = "🔴 Gridlock!";
+    
+    return QString("🛣️ Road Segment %1\n"
+                   "From: Intersection %2 → %3\n"
+                   "Status: %4\n"
+                   "Vehicles: %5 / %6 capacity")
             .arg(m_edgeId)
             .arg(m_fromNode)
             .arg(m_toNode)
-            .arg(m_capacity)
+            .arg(status)
             .arg(m_occupancy)
-            .arg(ratio, 0, 'f', 1)
-            .arg(m_length, 0, 'f', 1);
+            .arg(m_capacity);
 }
 
 void EdgeGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {
@@ -174,18 +206,18 @@ void EdgeGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
 }
 
 // ============================================================================
-// AgentGraphicsItem Implementation
+// AgentGraphicsItem Implementation - Car Style
 // ============================================================================
 
 AgentGraphicsItem::AgentGraphicsItem(Agent* agent, PolicyType policy, QGraphicsItem* parent)
-    : QGraphicsObject(parent), m_agent(agent), m_policy(policy), m_selected(false) {
+    : QGraphicsObject(parent), m_agent(agent), m_policy(policy), m_selected(false), m_showTrail(true) {
     setAcceptHoverEvents(true);
     setZValue(20); // Agents above everything
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 QRectF AgentGraphicsItem::boundingRect() const {
-    qreal margin = AGENT_RADIUS + 2;
+    qreal margin = 20;
     return QRectF(-margin, -margin, 2 * margin, 2 * margin);
 }
 
@@ -195,60 +227,105 @@ void AgentGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     
     painter->setRenderHint(QPainter::Antialiasing);
     
-    // Draw trail
-    if (m_trail.size() > 1) {
-        QPen trailPen;
+    // Draw trail first (behind the car) if enabled
+    if (m_showTrail && m_trail.size() > 1) {
         for (int i = 0; i < m_trail.size() - 1; ++i) {
             const auto& p1 = m_trail[i];
             const auto& p2 = m_trail[i + 1];
             
             QColor trailColor = p1.color;
-            trailColor.setAlphaF(p1.opacity);
-            trailPen.setColor(trailColor);
-            trailPen.setWidth(2);
+            trailColor.setAlphaF(p1.opacity * 0.4);
+            
+            QPen trailPen(trailColor, 3, Qt::SolidLine, Qt::RoundCap);
             painter->setPen(trailPen);
             painter->drawLine(p1.pos, p2.pos);
         }
     }
     
-    // Agent color based on policy
-    QColor agentColor;
+    // Car colors based on policy
+    QColor carBody, carAccent;
     if (m_policy == PolicyType::SHORTEST_PATH) {
-        agentColor = QColor(168, 85, 247); // Purple
+        carBody = QColor(70, 130, 220);   // Blue car
+        carAccent = QColor(100, 160, 255);
     } else {
-        agentColor = QColor(16, 185, 129); // Green
+        carBody = QColor(50, 180, 100);   // Green car
+        carAccent = QColor(80, 220, 130);
     }
     
     // Selection glow
     if (m_selected) {
-        QRadialGradient selectionGradient(0, 0, AGENT_RADIUS + 4);
-        selectionGradient.setColorAt(0, QColor(agentColor.red(), agentColor.green(), agentColor.blue(), 150));
-        selectionGradient.setColorAt(1, QColor(agentColor.red(), agentColor.green(), agentColor.blue(), 0));
-        painter->setBrush(selectionGradient);
+        QRadialGradient selGlow(0, 0, 18);
+        selGlow.setColorAt(0, QColor(255, 255, 100, 150));
+        selGlow.setColorAt(1, QColor(255, 255, 100, 0));
+        painter->setBrush(selGlow);
         painter->setPen(Qt::NoPen);
-        painter->drawEllipse(QRectF(-AGENT_RADIUS - 4, -AGENT_RADIUS - 4, 
-                                   2 * (AGENT_RADIUS + 4), 2 * (AGENT_RADIUS + 4)));
+        painter->drawEllipse(QRectF(-18, -18, 36, 36));
     }
     
-    // Agent circle
-    QRadialGradient agentGradient(0, 0, AGENT_RADIUS);
-    agentGradient.setColorAt(0, agentColor.lighter(120));
-    agentGradient.setColorAt(1, agentColor);
+    // Draw car body (rounded rectangle, top-down view)
+    qreal carLength = 14.0;
+    qreal carWidth = 8.0;
     
-    painter->setBrush(agentGradient);
-    painter->setPen(QPen(agentColor.lighter(150), 1.5));
-    painter->drawEllipse(QRectF(-AGENT_RADIUS, -AGENT_RADIUS, 
-                               2 * AGENT_RADIUS, 2 * AGENT_RADIUS));
+    // Car shadow
+    painter->setBrush(QColor(0, 0, 0, 60));
+    painter->setPen(Qt::NoPen);
+    painter->drawRoundedRect(QRectF(-carLength/2 + 2, -carWidth/2 + 2, carLength, carWidth), 3, 3);
+    
+    // Car body gradient
+    QLinearGradient bodyGrad(-carLength/2, 0, carLength/2, 0);
+    bodyGrad.setColorAt(0, carBody.darker(110));
+    bodyGrad.setColorAt(0.5, carBody);
+    bodyGrad.setColorAt(1, carBody.darker(110));
+    
+    painter->setBrush(bodyGrad);
+    painter->setPen(QPen(carBody.darker(130), 1));
+    painter->drawRoundedRect(QRectF(-carLength/2, -carWidth/2, carLength, carWidth), 3, 3);
+    
+    // Windshield (front window)
+    painter->setBrush(QColor(150, 200, 255, 180));
+    painter->setPen(Qt::NoPen);
+    painter->drawRoundedRect(QRectF(carLength/2 - 5, -carWidth/2 + 1.5, 3, carWidth - 3), 1, 1);
+    
+    // Rear window
+    painter->setBrush(QColor(100, 150, 200, 150));
+    painter->drawRoundedRect(QRectF(-carLength/2 + 2, -carWidth/2 + 1.5, 2.5, carWidth - 3), 1, 1);
+    
+    // Headlights (front)
+    painter->setBrush(QColor(255, 255, 200));
+    painter->drawEllipse(QPointF(carLength/2 - 1, -carWidth/2 + 1.5), 1.2, 1.2);
+    painter->drawEllipse(QPointF(carLength/2 - 1, carWidth/2 - 1.5), 1.2, 1.2);
+    
+    // Taillights (back)
+    painter->setBrush(QColor(255, 50, 50));
+    painter->drawEllipse(QPointF(-carLength/2 + 1.5, -carWidth/2 + 1.5), 1.0, 1.0);
+    painter->drawEllipse(QPointF(-carLength/2 + 1.5, carWidth/2 - 1.5), 1.0, 1.0);
+    
+    // Direction indicator arrow
+    painter->setBrush(carAccent);
+    painter->setPen(QPen(Qt::white, 0.5));
+    QPolygonF arrow;
+    arrow << QPointF(carLength/2 + 4, 0)
+          << QPointF(carLength/2 + 1, -2.5)
+          << QPointF(carLength/2 + 1, 2.5);
+    painter->drawPolygon(arrow);
 }
 
 void AgentGraphicsItem::setPosition(const QPointF& pos) {
+    // Calculate rotation based on movement direction
+    if (!m_position.isNull() && pos != m_position) {
+        QLineF moveLine(m_position, pos);
+        qreal angle = -moveLine.angle(); // Qt angles are counter-clockwise
+        setRotation(angle);
+    }
+    
     m_position = pos;
     setPos(pos);
 }
 
 void AgentGraphicsItem::addTrailPoint(const QPointF& pos, const QColor& color) {
     TrailPoint point;
-    point.pos = pos;
+    // Convert to local coordinates for trail
+    point.pos = mapFromScene(pos);
     point.opacity = 1.0;
     point.color = color;
     
@@ -261,13 +338,18 @@ void AgentGraphicsItem::addTrailPoint(const QPointF& pos, const QColor& color) {
 void AgentGraphicsItem::updateTrail() {
     // Fade out trail points
     for (auto& point : m_trail) {
-        point.opacity = qMax(0.0, point.opacity - 0.05);
+        point.opacity = qMax(0.0, point.opacity - 0.08);
     }
     
     // Remove fully faded points
     m_trail.erase(std::remove_if(m_trail.begin(), m_trail.end(),
                                  [](const TrailPoint& p) { return p.opacity <= 0.0; }),
                  m_trail.end());
+}
+
+void AgentGraphicsItem::clearTrail() {
+    m_trail.clear();
+    update();
 }
 
 void AgentGraphicsItem::setSelected(bool selected) {
@@ -277,7 +359,6 @@ void AgentGraphicsItem::setSelected(bool selected) {
 
 void AgentGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     if (event->button() == Qt::LeftButton && m_agent) {
-        // Only allow selection if agent is still valid
         setSelected(true);
         event->accept();
     }
@@ -285,12 +366,13 @@ void AgentGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 }
 
 // ============================================================================
-// GridView Implementation
+// GridView Implementation - City Map Style
 // ============================================================================
 
 GridView::GridView(QWidget* parent)
     : QGraphicsView(parent), m_controller(nullptr), m_scene(new QGraphicsScene(this)),
       m_zoomLevel(1.0), m_showGrid(true), m_showNodeLabels(false),
+      m_showTrails(true), m_showHeatMap(false),
       m_panning(false), m_animationTimer(new QTimer(this)), m_selectedAgent(nullptr) {
     
     setScene(m_scene);
@@ -298,8 +380,8 @@ GridView::GridView(QWidget* parent)
     setRenderHint(QPainter::SmoothPixmapTransform);
     setDragMode(QGraphicsView::NoDrag);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    setBackgroundBrush(QColor(10, 10, 10)); // Dark background #0A0A0A
-    setStyleSheet("background-color: #0A0A0A; border-radius: 8px;");
+    setBackgroundBrush(QColor(18, 21, 26)); // Match new theme
+    setStyleSheet("background-color: #12151a; border: none;");
     
     // Animation timer for smooth updates
     m_animationTimer->setInterval(16); // ~60 FPS
@@ -321,13 +403,29 @@ void GridView::setSimulationController(SimulationController* controller) {
 }
 
 void GridView::updateScene() {
-    if (!m_controller || !m_controller->getCity()) {
+    if (!m_controller) {
         return;
     }
     
     City* city = m_controller->getCity();
+    if (!city) {
+        return;
+    }
     
-    // Clear existing items
+    // Stop any running animations
+    for (auto* anim : m_agentAnimations.values()) {
+        anim->stop();
+        delete anim;
+    }
+    m_agentAnimations.clear();
+    
+    for (auto* anim : m_edgeColorAnimations.values()) {
+        anim->stop();
+        delete anim;
+    }
+    m_edgeColorAnimations.clear();
+    
+    // Clear existing items from scene
     for (auto* item : m_nodeItems.values()) {
         m_scene->removeItem(item);
         delete item;
@@ -346,22 +444,37 @@ void GridView::updateScene() {
     }
     m_agentItems.clear();
     
-    // Clear selected agent when scene is updated
     m_selectedAgent = nullptr;
     
-    // Create node items
-    createNodeItems();
+    // Reset scene rect based on new city size
+    int nodeCount = city->getNodeCount();
+    if (nodeCount > 0) {
+        // Estimate grid dimensions
+        int maxRow = 0, maxCol = 0;
+        for (int i = 0; i < nodeCount; ++i) {
+            NodeId nodeId = city->getNodeIdByIndex(i);
+            const Node& node = city->getNode(nodeId);
+            maxRow = std::max(maxRow, node.getRow());
+            maxCol = std::max(maxCol, node.getCol());
+        }
+        
+        qreal sceneWidth = (maxCol + 2) * 100.0 + 200;
+        qreal sceneHeight = (maxRow + 2) * 100.0 + 200;
+        m_scene->setSceneRect(0, 0, sceneWidth, sceneHeight);
+    }
     
-    // Create edge items
-    createEdgeItems();
+    // Create graphics items in correct order
+    createEdgeItems();   // Edges first (below)
+    createNodeItems();   // Then nodes
+    createAgentItems();  // Agents on top
     
-    // Create agent items
-    createAgentItems();
-    
-    // Update colors
+    // Update edge colors
     updateEdgeColors();
     
-    // Fit to window initially
+    // Force viewport update
+    viewport()->update();
+    
+    // Fit to window
     fitToWindow();
 }
 
@@ -370,21 +483,12 @@ void GridView::createNodeItems() {
     
     City* city = m_controller->getCity();
     
-    // Find max row/col to determine grid size
-    int maxRow = 0, maxCol = 0;
+    // Calculate spacing for a nice grid layout
+    const qreal SPACING = 100.0;
+    qreal startX = 150;
+    qreal startY = 150;
+    
     int nodeCount = city->getNodeCount();
-    for (int i = 0; i < nodeCount; ++i) {
-        NodeId nodeId = city->getNodeIdByIndex(i);
-        const Node& node = city->getNode(nodeId);
-        maxRow = std::max(maxRow, node.getRow());
-        maxCol = std::max(maxCol, node.getCol());
-    }
-    
-    // Calculate spacing (assuming grid layout)
-    const qreal SPACING = 80.0;
-    qreal startX = 100;
-    qreal startY = 100;
-    
     for (int i = 0; i < nodeCount; ++i) {
         NodeId nodeId = city->getNodeIdByIndex(i);
         const Node& node = city->getNode(nodeId);
@@ -402,12 +506,29 @@ void GridView::createEdgeItems() {
     
     City* city = m_controller->getCity();
     
+    // We need node positions first, so create a temporary map
+    const qreal SPACING = 100.0;
+    qreal startX = 150;
+    qreal startY = 150;
+    
+    QMap<NodeId, QPointF> nodePositions;
+    int nodeCount = city->getNodeCount();
+    for (int i = 0; i < nodeCount; ++i) {
+        NodeId nodeId = city->getNodeIdByIndex(i);
+        const Node& node = city->getNode(nodeId);
+        nodePositions[nodeId] = QPointF(startX + node.getCol() * SPACING, 
+                                        startY + node.getRow() * SPACING);
+    }
+    
     int edgeCount = city->getEdgeCount();
     for (int i = 0; i < edgeCount; ++i) {
         EdgeId edgeId = city->getEdgeIdByIndex(i);
         const Edge& edge = city->getEdge(edgeId);
-        QPointF fromPos = nodePosition(edge.getFrom());
-        QPointF toPos = nodePosition(edge.getTo());
+        
+        QPointF fromPos = nodePositions.value(edge.getFrom(), QPointF());
+        QPointF toPos = nodePositions.value(edge.getTo(), QPointF());
+        
+        if (fromPos.isNull() || toPos.isNull()) continue;
         
         EdgeGraphicsItem* item = new EdgeGraphicsItem(edgeId, edge.getFrom(), edge.getTo(), fromPos, toPos);
         m_scene->addItem(item);
@@ -427,6 +548,8 @@ void GridView::createAgentItems() {
         QPointF pos = nodePosition(agent->getCurrentNode());
         AgentGraphicsItem* item = new AgentGraphicsItem(agent, policy);
         item->setPosition(pos);
+        item->setVisible(!agent->hasArrived());
+        item->setShowTrail(m_showTrails);
         m_scene->addItem(item);
         m_agentItems[agent] = item;
     }
@@ -449,6 +572,7 @@ void GridView::updateEdgeColors() {
     if (!m_controller || !m_controller->getCity()) return;
     
     City* city = m_controller->getCity();
+    PolicyType currentPolicy = m_controller->getPolicy();
     
     for (auto it = m_edgeItems.begin(); it != m_edgeItems.end(); ++it) {
         EdgeId edgeId = it.key();
@@ -461,39 +585,66 @@ void GridView::updateEdgeColors() {
         
         item->setCongestion(occupancy, capacity, length);
         
-        // Animate color transition
-        QColor targetColor = getCongestionColor(occupancy, capacity);
-        
-        if (m_edgeColorAnimations.contains(item)) {
-            QPropertyAnimation* anim = m_edgeColorAnimations[item];
-            anim->stop();
-            anim->setEndValue(targetColor);
-            anim->start();
+        // Get target color based on policy and occupancy
+        QColor targetColor;
+        if (m_showHeatMap && currentPolicy == PolicyType::CONGESTION_AWARE) {
+            // For congestion-aware, show "perceived cost" - 
+            // roads with ANY traffic are penalized more
+            targetColor = getCongestionAwareColor(occupancy, capacity);
         } else {
-            QPropertyAnimation* anim = new QPropertyAnimation(item, "color");
-            anim->setDuration(300);
-            anim->setEasingCurve(QEasingCurve::InOutQuad);
-            anim->setStartValue(item->currentColor());
-            anim->setEndValue(targetColor);
-            m_edgeColorAnimations[item] = anim;
-            anim->start();
+            targetColor = getCongestionColor(occupancy, capacity);
         }
+        item->setColor(targetColor);
     }
 }
 
 QColor GridView::getCongestionColor(int occupancy, int capacity) const {
     double ratio = capacity > 0 ? static_cast<double>(occupancy) / capacity : 0.0;
     
-    if (ratio == 0.0) {
-        return QColor(59, 130, 246); // Cool blue - Empty
-    } else if (ratio < 0.3) {
-        return QColor(6, 182, 212); // Cyan - Light traffic
-    } else if (ratio < 0.7) {
-        return QColor(245, 158, 11); // Yellow - Medium
-    } else if (ratio < 1.0) {
-        return QColor(249, 115, 22); // Orange - Heavy
+    if (m_showHeatMap) {
+        // Vivid heat map colors - lower thresholds to see more variation
+        if (occupancy == 0) {
+            return QColor(50, 160, 50); // Green - empty road
+        } else if (ratio <= 0.33) {
+            return QColor(120, 200, 80); // Light green - 1 car (light traffic)
+        } else if (ratio <= 0.66) {
+            return QColor(255, 200, 0); // Yellow/Gold - 2 cars (moderate)
+        } else if (ratio < 1.0) {
+            return QColor(255, 120, 0); // Orange - almost full
+        } else {
+            return QColor(255, 50, 50); // Red - at capacity (gridlock)
+        }
     } else {
-        return QColor(239, 68, 68); // Red - Gridlock
+        // Subtle default colors when heat map is off
+        if (occupancy == 0) {
+            return QColor(80, 100, 80); // Grayish green - empty
+        } else if (ratio <= 0.33) {
+            return QColor(60, 140, 60); // Forest green - light
+        } else if (ratio <= 0.66) {
+            return QColor(180, 150, 50); // Olive/gold - moderate
+        } else if (ratio < 1.0) {
+            return QColor(200, 100, 50); // Orange - heavy
+        } else {
+            return QColor(180, 60, 60); // Red - gridlock
+        }
+    }
+}
+
+QColor GridView::getCongestionAwareColor(int occupancy, int capacity) const {
+    // Congestion-aware view: roads with ANY traffic show as more "expensive"
+    // This visualizes how the congestion-aware algorithm "sees" the network
+    double ratio = capacity > 0 ? static_cast<double>(occupancy) / capacity : 0.0;
+    
+    if (occupancy == 0) {
+        return QColor(50, 180, 80); // Bright green - preferred route (empty)
+    } else if (occupancy == 1) {
+        return QColor(200, 200, 50); // Yellow - slightly penalized
+    } else if (ratio <= 0.5) {
+        return QColor(255, 150, 0); // Orange - avoid if possible
+    } else if (ratio < 1.0) {
+        return QColor(255, 80, 0); // Dark orange - strongly avoid
+    } else {
+        return QColor(220, 30, 30); // Red - blocked/full
     }
 }
 
@@ -502,15 +653,13 @@ void GridView::updateAgentPositions() {
     
     auto& agents = m_controller->getAgents();
     
-    // Build a set of valid agent pointers for quick lookup
+    // Build set of valid agents
     QSet<Agent*> validAgents;
     for (Agent* agent : agents) {
-        if (agent) {
-            validAgents.insert(agent);
-        }
+        if (agent) validAgents.insert(agent);
     }
     
-    // Remove items for agents that no longer exist
+    // Remove invalid agent items
     QList<Agent*> agentsToRemove;
     for (auto it = m_agentItems.begin(); it != m_agentItems.end(); ++it) {
         if (!validAgents.contains(it.key())) {
@@ -527,46 +676,34 @@ void GridView::updateAgentPositions() {
         }
     }
     
+    // Update agent positions
     for (Agent* agent : agents) {
         if (!agent || !m_agentItems.contains(agent)) continue;
         
         AgentGraphicsItem* item = m_agentItems[agent];
         
+        // Hide arrived agents
+        if (agent->hasArrived()) {
+            item->setVisible(false);
+            continue;
+        }
+        
+        item->setVisible(true);
+        
         QPointF targetPos;
         if (agent->getCurrentEdge().has_value()) {
-            // Agent is on an edge - interpolate position
             EdgeId edgeId = agent->getCurrentEdge().value();
             const Edge& edge = m_controller->getCity()->getEdge(edgeId);
-            // For now, assume halfway (we'd need to track progress in Agent)
             targetPos = interpolatePosition(edge.getFrom(), edge.getTo(), 0.5);
         } else {
-            // Agent is at a node
             targetPos = nodePosition(agent->getCurrentNode());
         }
         
-        // Animate position
-        QPointF currentPos = item->position();
-        if (currentPos != targetPos) {
-            if (m_agentAnimations.contains(item)) {
-                QPropertyAnimation* anim = m_agentAnimations[item];
-                anim->stop();
-                anim->setStartValue(currentPos);
-                anim->setEndValue(targetPos);
-                anim->start();
-            } else {
-                QPropertyAnimation* anim = new QPropertyAnimation(item, "pos");
-                anim->setDuration(200);
-                anim->setEasingCurve(QEasingCurve::InOutQuad);
-                anim->setStartValue(currentPos);
-                anim->setEndValue(targetPos);
-                m_agentAnimations[item] = anim;
-                anim->start();
-            }
-        }
+        // Move agent and update trail
+        item->setPosition(targetPos);
         
-        // Update trail
         QColor trailColor = (m_controller->getPolicy() == PolicyType::CONGESTION_AWARE ? 
-                            QColor(16, 185, 129) : QColor(168, 85, 247));
+                            QColor(50, 180, 100) : QColor(70, 130, 220));
         item->addTrailPoint(targetPos, trailColor);
     }
 }
@@ -575,25 +712,15 @@ void GridView::animateStep() {
     updateEdgeColors();
     updateAgentPositions();
     
-    // Update trails
     for (auto* item : m_agentItems.values()) {
         item->updateTrail();
     }
 }
 
 void GridView::onAnimationFrame() {
-    // Update trail fading
     for (auto* item : m_agentItems.values()) {
         item->updateTrail();
     }
-    
-    // Update edge color animations
-    for (auto* anim : m_edgeColorAnimations.values()) {
-        if (anim->state() == QPropertyAnimation::Running) {
-            // Animation updates automatically
-        }
-    }
-    
     viewport()->update();
 }
 
@@ -603,7 +730,7 @@ void GridView::fitToWindow() {
     QRectF itemsRect = m_scene->itemsBoundingRect();
     if (itemsRect.isEmpty()) return;
     
-    itemsRect.adjust(-50, -50, 50, 50); // Add padding
+    itemsRect.adjust(-80, -80, 80, 80);
     fitInView(itemsRect, Qt::KeepAspectRatio);
     m_zoomLevel = transform().m11();
 }
@@ -620,8 +747,26 @@ void GridView::setShowNodeLabels(bool show) {
     }
 }
 
+void GridView::setShowTrails(bool show) {
+    m_showTrails = show;
+    for (auto* item : m_agentItems.values()) {
+        item->setShowTrail(show);
+        if (!show) {
+            item->clearTrail();
+        }
+    }
+    viewport()->update();
+}
+
+void GridView::setShowHeatMap(bool show) {
+    m_showHeatMap = show;
+    // Update edge colors to show heat map
+    updateEdgeColors();
+    viewport()->update();
+}
+
 void GridView::setZoomLevel(qreal level) {
-    level = qBound(1.0, level, 5.0);
+    level = qBound(0.2, level, 4.0);
     if (qAbs(level - m_zoomLevel) < 0.01) return;
     
     m_zoomLevel = level;
@@ -654,20 +799,16 @@ void GridView::mousePressEvent(QMouseEvent* event) {
         return;
     }
     
-    // Handle agent selection
     if (event->button() == Qt::LeftButton) {
         QGraphicsItem* item = itemAt(event->pos());
         AgentGraphicsItem* agentItem = qgraphicsitem_cast<AgentGraphicsItem*>(item);
         
-        // Deselect previous agent
         if (m_selectedAgent && m_selectedAgent != agentItem) {
             m_selectedAgent->setSelected(false);
         }
         
-        // Select new agent
         if (agentItem) {
             Agent* agent = agentItem->agent();
-            // Verify agent is still valid by checking if it exists in current agents list
             if (agent && m_controller) {
                 bool isValid = false;
                 auto& agents = m_controller->getAgents();
@@ -685,9 +826,6 @@ void GridView::mousePressEvent(QMouseEvent* event) {
                     m_selectedAgent = nullptr;
                     emit agentSelected(nullptr);
                 }
-            } else {
-                m_selectedAgent = nullptr;
-                emit agentSelected(nullptr);
             }
         } else {
             m_selectedAgent = nullptr;
@@ -723,7 +861,7 @@ void GridView::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void GridView::keyPressEvent(QKeyEvent* event) {
-    const int step = 20;
+    const int step = 30;
     switch (event->key()) {
         case Qt::Key_Left:
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() - step);
@@ -743,39 +881,106 @@ void GridView::keyPressEvent(QKeyEvent* event) {
 }
 
 void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
-    Q_UNUSED(rect);
+    // Soft grass green background
+    QLinearGradient gradient(rect.topLeft(), rect.bottomRight());
+    gradient.setColorAt(0, QColor(76, 132, 82));    // Soft sage green
+    gradient.setColorAt(0.5, QColor(88, 145, 92));  // Light grass
+    gradient.setColorAt(1, QColor(65, 117, 70));    // Deeper green
+    painter->fillRect(rect, gradient);
     
-    // Dark background #0A0A0A
-    painter->fillRect(rect, QColor(10, 10, 10));
-    
+    // Draw grass texture pattern
     if (m_showGrid) {
-        // Draw subtle grid with #3E3E42 color
-        painter->setPen(QPen(QColor(62, 62, 66), 1));
-        const qreal gridSize = 50.0;
+        const qreal blockSize = 80.0;
         
-        qreal left = qFloor(rect.left() / gridSize) * gridSize;
-        qreal top = qFloor(rect.top() / gridSize) * gridSize;
+        qreal left = qFloor(rect.left() / blockSize) * blockSize;
+        qreal top = qFloor(rect.top() / blockSize) * blockSize;
         
-        for (qreal x = left; x < rect.right(); x += gridSize) {
+        painter->setPen(Qt::NoPen);
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        
+        // Draw park blocks (grass patches)
+        for (qreal x = left; x < rect.right(); x += blockSize) {
+            for (qreal y = top; y < rect.bottom(); y += blockSize) {
+                int shade = (static_cast<int>(x + y) / static_cast<int>(blockSize)) % 2;
+                if (shade == 0) {
+                    painter->setBrush(QColor(95, 155, 100, 40));
+                } else {
+                    painter->setBrush(QColor(75, 135, 80, 30));
+                }
+                QRectF block(x + 8, y + 8, blockSize - 16, blockSize - 16);
+                painter->drawRoundedRect(block, 6, 6);
+            }
+        }
+        
+        // Draw realistic trees scattered around
+        const qreal treeSpacing = 140.0;
+        qreal treeLeft = qFloor(rect.left() / treeSpacing) * treeSpacing;
+        qreal treeTop = qFloor(rect.top() / treeSpacing) * treeSpacing;
+        
+        for (qreal x = treeLeft; x < rect.right(); x += treeSpacing) {
+            for (qreal y = treeTop; y < rect.bottom(); y += treeSpacing) {
+                // Pseudo-random offset for natural placement
+                int seed = static_cast<int>(x * 7 + y * 13);
+                qreal offsetX = (seed % 50) - 25;
+                qreal offsetY = ((seed * 3) % 50) - 25;
+                qreal treeX = x + offsetX;
+                qreal treeY = y + offsetY;
+                
+                // Tree size variation
+                qreal scale = 0.8 + ((seed % 5) * 0.1);
+                
+                // Shadow under tree
+                painter->setBrush(QColor(40, 70, 45, 60));
+                painter->drawEllipse(QPointF(treeX + 2, treeY + 12 * scale), 10 * scale, 5 * scale);
+                
+                // Tree trunk
+                painter->setBrush(QColor(92, 64, 51));  // Warm brown
+                painter->drawRoundedRect(QRectF(treeX - 2 * scale, treeY, 4 * scale, 12 * scale), 2, 2);
+                
+                // Trunk detail
+                painter->setPen(QPen(QColor(72, 50, 40), 1));
+                painter->drawLine(QPointF(treeX, treeY + 2), QPointF(treeX, treeY + 10 * scale));
+                painter->setPen(Qt::NoPen);
+                
+                // Tree canopy - layered for depth
+                // Back layer (shadow)
+                painter->setBrush(QColor(45, 90, 50));
+                painter->drawEllipse(QPointF(treeX + 1, treeY - 4 * scale), 12 * scale, 10 * scale);
+                
+                // Middle layer
+                painter->setBrush(QColor(60, 115, 65));
+                painter->drawEllipse(QPointF(treeX - 2, treeY - 6 * scale), 11 * scale, 9 * scale);
+                
+                // Front highlight
+                painter->setBrush(QColor(80, 140, 85));
+                painter->drawEllipse(QPointF(treeX - 3, treeY - 8 * scale), 8 * scale, 7 * scale);
+                
+                // Top highlight
+                painter->setBrush(QColor(100, 160, 105, 180));
+                painter->drawEllipse(QPointF(treeX - 4, treeY - 10 * scale), 5 * scale, 4 * scale);
+            }
+        }
+        
+        // Draw subtle grid lines
+        painter->setPen(QPen(QColor(50, 80, 55, 25), 1, Qt::DotLine));
+        
+        for (qreal x = left; x < rect.right(); x += blockSize) {
             painter->drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
         }
         
-        for (qreal y = top; y < rect.bottom(); y += gridSize) {
+        for (qreal y = top; y < rect.bottom(); y += blockSize) {
             painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
         }
     }
 }
 
 void GridView::updateAgentTrail(AgentGraphicsItem* agentItem, Agent* agent) {
-    // This is handled in updateAgentPositions now
     Q_UNUSED(agentItem);
     Q_UNUSED(agent);
 }
 
 void GridView::clearAgentTrails() {
     for (auto* item : m_agentItems.values()) {
-        // Clear trail by removing all points
-        // This would need a method in AgentGraphicsItem
+        // Trails are cleared in AgentGraphicsItem
     }
 }
-

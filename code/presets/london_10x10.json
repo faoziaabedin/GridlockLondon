@@ -1,0 +1,10 @@
+{
+  "name": "London Grid 10x10 - High Density",
+  "rows": 10,
+  "cols": 10,
+  "blocked": [[12, 13], [45, 46], [78, 79]],
+  "agentCount": 50,
+  "tickMs": 125,
+  "policy": "CONGESTION_AWARE"
+}
+

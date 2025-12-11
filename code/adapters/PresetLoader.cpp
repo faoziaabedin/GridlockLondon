@@ -1,5 +1,6 @@
 // code/adapters/PresetLoader.cpp
 #include "PresetLoader.h"
+#include "JsonReader.h"
 #include "../core/City.h"
 #include "../core/Node.h"
 #include "../core/Edge.h"
@@ -8,18 +9,147 @@
 #include <random>
 #include <unordered_set>
 #include <stdexcept>
+#include <sstream>
+#include <algorithm>
+#include <cctype>
+
+// Simple JSON parsing helper functions
+namespace {
+    std::string trim(const std::string& str) {
+        size_t start = str.find_first_not_of(" \t\n\r");
+        if (start == std::string::npos) return "";
+        size_t end = str.find_last_not_of(" \t\n\r");
+        return str.substr(start, end - start + 1);
+    }
+    
+    std::string extractStringValue(const std::string& json, const std::string& key) {
+        std::string searchKey = "\"" + key + "\"";
+        size_t pos = json.find(searchKey);
+        if (pos == std::string::npos) return "";
+        
+        pos = json.find(':', pos);
+        if (pos == std::string::npos) return "";
+        
+        pos = json.find('"', pos);
+        if (pos == std::string::npos) return "";
+        
+        size_t start = pos + 1;
+        size_t end = json.find('"', start);
+        if (end == std::string::npos) return "";
+        
+        return json.substr(start, end - start);
+    }
+    
+    int extractIntValue(const std::string& json, const std::string& key, int defaultValue = 0) {
+        std::string searchKey = "\"" + key + "\"";
+        size_t pos = json.find(searchKey);
+        if (pos == std::string::npos) return defaultValue;
+        
+        pos = json.find(':', pos);
+        if (pos == std::string::npos) return defaultValue;
+        
+        // Skip whitespace
+        pos++;
+        while (pos < json.size() && std::isspace(json[pos])) pos++;
+        
+        // Read number
+        std::string numStr;
+        while (pos < json.size() && (std::isdigit(json[pos]) || json[pos] == '-')) {
+            numStr += json[pos];
+            pos++;
+        }
+        
+        if (numStr.empty()) return defaultValue;
+        return std::stoi(numStr);
+    }
+    
+    std::vector<std::pair<int, int>> extractBlockedEdges(const std::string& json) {
+        std::vector<std::pair<int, int>> blocked;
+        
+        std::string searchKey = "\"blocked\"";
+        size_t pos = json.find(searchKey);
+        if (pos == std::string::npos) return blocked;
+        
+        pos = json.find('[', pos);
+        if (pos == std::string::npos) return blocked;
+        
+        size_t end = json.find(']', pos);
+        if (end == std::string::npos) return blocked;
+        
+        std::string arrayContent = json.substr(pos + 1, end - pos - 1);
+        
+        // Parse array of pairs like [[0,1], [2,3]]
+        size_t innerStart = 0;
+        while ((innerStart = arrayContent.find('[', innerStart)) != std::string::npos) {
+            size_t innerEnd = arrayContent.find(']', innerStart);
+            if (innerEnd == std::string::npos) break;
+            
+            std::string pairStr = arrayContent.substr(innerStart + 1, innerEnd - innerStart - 1);
+            
+            // Extract two numbers
+            std::istringstream iss(pairStr);
+            int from, to;
+            char comma;
+            if (iss >> from >> comma >> to) {
+                blocked.push_back({from, to});
+            }
+            
+            innerStart = innerEnd + 1;
+        }
+        
+        return blocked;
+    }
+}
 
 Preset PresetLoader::loadFromJson(const std::string& path) {
-    // Stub implementation for Deliverable 2
-    // In a full implementation, this would parse JSON and populate a Preset
-    // For now, return a default preset
+    JsonReader reader;
+    std::string json;
+    
+    try {
+        json = reader.read(path);
+    } catch (const std::exception& e) {
+        // Re-throw so caller can try different paths
+        throw std::runtime_error("Failed to read file: " + path + " - " + e.what());
+    }
+    
+    if (json.empty()) {
+        throw std::runtime_error("File is empty: " + path);
+    }
+    
     Preset preset;
-    preset.setName("default");
-    preset.setRows(3);
-    preset.setCols(3);
-    preset.setAgentCount(5);
-    preset.setTickMs(100);
-    preset.setPolicy(PolicyType::SHORTEST_PATH);
+    
+    // Parse JSON fields
+    std::string name = extractStringValue(json, "name");
+    preset.setName(name.empty() ? "unnamed" : name);
+    
+    int rows = extractIntValue(json, "rows", 5);
+    preset.setRows(rows);
+    
+    int cols = extractIntValue(json, "cols", 5);
+    preset.setCols(cols);
+    
+    int agentCount = extractIntValue(json, "agentCount", 10);
+    preset.setAgentCount(agentCount);
+    
+    int tickMs = extractIntValue(json, "tickMs", 100);
+    preset.setTickMs(tickMs);
+    
+    // Parse policy
+    std::string policyStr = extractStringValue(json, "policy");
+    if (policyStr == "CONGESTION_AWARE" || policyStr == "congestion_aware") {
+        preset.setPolicy(PolicyType::CONGESTION_AWARE);
+    } else {
+        preset.setPolicy(PolicyType::SHORTEST_PATH);
+    }
+    
+    // Parse blocked edges
+    std::vector<std::pair<int, int>> blocked = extractBlockedEdges(json);
+    std::vector<std::pair<NodeId, NodeId>> blockedEdges;
+    for (const auto& pair : blocked) {
+        blockedEdges.push_back({static_cast<NodeId>(pair.first), static_cast<NodeId>(pair.second)});
+    }
+    preset.setBlockedEdges(blockedEdges);
+    
     return preset;
 }
 
@@ -77,6 +207,21 @@ std::vector<std::unique_ptr<Agent>> PresetLoader::spawnAgents(const Preset& pres
 std::unique_ptr<City> PresetLoader::createGridTopology(int rows, int cols) {
     auto city = std::make_unique<City>();
     
+    // Scale capacity based on grid size
+    // Smaller grids = lower capacity (traffic shows more)
+    // Larger grids = higher capacity (more room for agents)
+    int gridSize = rows * cols;
+    int capacity;
+    if (gridSize <= 25) {         // 5x5 or smaller
+        capacity = 2;
+    } else if (gridSize <= 64) {  // 6x6 to 8x8
+        capacity = 3;
+    } else if (gridSize <= 144) { // 9x9 to 12x12
+        capacity = 4;
+    } else {                      // 13x13 and larger
+        capacity = 5;
+    }
+    
     // Create nodes
     // Node ID = row * cols + col
     for (int row = 0; row < rows; ++row) {
@@ -95,13 +240,13 @@ std::unique_ptr<City> PresetLoader::createGridTopology(int rows, int cols) {
             NodeId from = row * cols + col;
             NodeId to = row * cols + col + 1;
             
-            // Create edge with default length 1.0 and capacity 10
-            Edge edge(edgeId, from, to, 1.0, 10);
+            // Create edge with scaled capacity
+            Edge edge(edgeId, from, to, 1.0, capacity);
             city->addEdge(edge);
             edgeId++;
             
             // Create reverse edge (bidirectional)
-            Edge reverseEdge(edgeId, to, from, 1.0, 10);
+            Edge reverseEdge(edgeId, to, from, 1.0, capacity);
             city->addEdge(reverseEdge);
             edgeId++;
         }
@@ -113,12 +258,12 @@ std::unique_ptr<City> PresetLoader::createGridTopology(int rows, int cols) {
             NodeId from = row * cols + col;
             NodeId to = (row + 1) * cols + col;
             
-            Edge edge(edgeId, from, to, 1.0, 10);
+            Edge edge(edgeId, from, to, 1.0, capacity);
             city->addEdge(edge);
             edgeId++;
             
             // Create reverse edge (bidirectional)
-            Edge reverseEdge(edgeId, to, from, 1.0, 10);
+            Edge reverseEdge(edgeId, to, from, 1.0, capacity);
             city->addEdge(reverseEdge);
             edgeId++;
         }

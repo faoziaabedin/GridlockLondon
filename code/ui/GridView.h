@@ -40,6 +40,8 @@ public:
     void fitToWindow();
     void setShowGrid(bool show);
     void setShowNodeLabels(bool show);
+    void setShowTrails(bool show);
+    void setShowHeatMap(bool show);
     qreal zoomLevel() const { return m_zoomLevel; }
     void setZoomLevel(qreal level);
 
@@ -68,6 +70,7 @@ private:
     void updateEdgeColors();
     void updateAgentPositions();
     QColor getCongestionColor(int occupancy, int capacity) const;
+    QColor getCongestionAwareColor(int occupancy, int capacity) const;
     QPointF nodePosition(NodeId nodeId) const;
     QPointF interpolatePosition(NodeId from, NodeId to, qreal progress) const;
     void updateAgentTrail(AgentGraphicsItem* agentItem, Agent* agent);
@@ -85,6 +88,8 @@ private:
     qreal m_zoomLevel;
     bool m_showGrid;
     bool m_showNodeLabels;
+    bool m_showTrails;
+    bool m_showHeatMap;
     bool m_panning;
     QPoint m_lastPanPoint;
     
@@ -187,6 +192,8 @@ public:
     QPointF position() const { return m_position; }
     void addTrailPoint(const QPointF& pos, const QColor& color);
     void updateTrail();
+    void clearTrail();
+    void setShowTrail(bool show) { m_showTrail = show; }
     void setSelected(bool selected);
     bool isSelected() const { return m_selected; }
     
@@ -205,6 +212,7 @@ private:
     QPointF m_position;
     QList<TrailPoint> m_trail;
     bool m_selected;
+    bool m_showTrail;
     static constexpr qreal AGENT_RADIUS = 6.0;
     static constexpr int MAX_TRAIL_POINTS = 20;
 };

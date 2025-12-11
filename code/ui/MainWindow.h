@@ -122,6 +122,10 @@ private:
     QLabel* m_fpsLabel;
     QLabel* m_updateTimeLabel;
     
+    // Zoom Bar
+    QSlider* m_zoomSlider;
+    QLabel* m_zoomLabel;
+    
     // Menu Bar
     QMenu* m_fileMenu;
     QMenu* m_simulationMenu;
@@ -131,6 +135,15 @@ private:
     // Toast notification
     QLabel* m_toastLabel;
     QPropertyAnimation* m_toastAnimation;
+    
+    // Traffic Legend Labels (dynamic based on grid)
+    QLabel* m_legendEmpty;
+    QLabel* m_legendLight;
+    QLabel* m_legendModerate;
+    QLabel* m_legendHeavy;
+    QLabel* m_legendGridlock;
+    int m_currentCapacity;
+    void updateTrafficLegend(int capacity);
     
     // Simulation
     SimulationController* m_controller;
