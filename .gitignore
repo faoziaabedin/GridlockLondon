@@ -19,3 +19,5 @@ compile_commands.json
 code/_deps/
 _deps/
 code/CMakeLists 2.txt
+.DS_Store
+code/_deps/
