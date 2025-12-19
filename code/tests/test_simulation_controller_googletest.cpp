@@ -4,6 +4,7 @@
 #include <memory>
 #include "../core/SimulationController.h"
 #include "../core/Preset.h"
+#include "../core/Metrics.h"
 #include "mocks/MockCity.h"
 
 /**
@@ -38,7 +39,8 @@ protected:
 // Test 1: Controller creation
 TEST_F(SimulationControllerTest, ControllerCreation) {
     EXPECT_NE(controller.get(), nullptr);
-    EXPECT_NE(controller->getCity(), nullptr);
+    // City is null until loadPreset is called
+    EXPECT_EQ(controller->getCity(), nullptr);
     EXPECT_NE(controller->getMetrics(), nullptr);
 }
 

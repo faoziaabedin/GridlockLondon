@@ -265,7 +265,8 @@ class RoutePlannerParameterizedTest : public ::testing::TestWithParam<std::pair<
 TEST_P(RoutePlannerParameterizedTest, WorksWithDifferentGridSizes) {
     auto [rows, cols] = GetParam();
     auto testCity = TestCityBuilder::createSimpleGrid(rows, cols);
-    RoutePlanner planner(std::make_unique<ShortestPathPolicy>().get());
+    auto policy = std::make_unique<ShortestPathPolicy>();
+    RoutePlanner planner(policy.get());
     
     int totalNodes = rows * cols;
     Agent agent(1, 0, totalNodes - 1);

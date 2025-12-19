@@ -258,6 +258,7 @@ add_test(NAME AgentTest COMMAND test_agent_googletest)
 
 # Metrics Test Suite (10+ tests)
 add_executable(test_metrics_googletest tests/test_metrics_googletest.cpp
+    tests/mocks/MockCity.cpp
     core/Metrics.cpp
     core/City.cpp
     core/Node.cpp
@@ -276,6 +277,7 @@ add_test(NAME MetricsTest COMMAND test_metrics_googletest)
 
 # SimulationController Test Suite (10+ tests)
 add_executable(test_simulation_controller_googletest tests/test_simulation_controller_googletest.cpp
+    tests/mocks/MockCity.cpp
     core/SimulationController.cpp
     core/City.cpp
     core/Node.cpp

@@ -11,8 +11,11 @@ Agent::Agent(int id, NodeId origin, NodeId destination)
       currentEdge(std::nullopt),
       departureTime(0),
       arrivalTime(-1),
-      arrived(false),
+      arrived(origin == destination),  // Already arrived if origin == destination
       stepsTaken(0) {
+    if (arrived) {
+        arrivalTime = 0;  // No travel time needed
+    }
 }
 
 bool Agent::needsRoute() const {

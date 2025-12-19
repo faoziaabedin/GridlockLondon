@@ -23,8 +23,8 @@ std::unique_ptr<City> TestCityBuilder::createCityWithBlockedEdges(int rows, int 
             const Edge& edge = city->getEdge(eid);
             if ((edge.getFrom() == from && edge.getTo() == to) ||
                 (edge.getFrom() == to && edge.getTo() == from)) {
-                // Mark as blocked by setting capacity to 0
-                city->getEdge(eid).setCapacity(0);
+                // Mark as blocked
+                city->getEdge(eid).setBlocked(true);
                 break;
             }
         }
