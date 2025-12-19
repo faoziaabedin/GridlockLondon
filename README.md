@@ -343,7 +343,7 @@ The project targets:
 
 ## Video Walkthrough
 
-[View Video](https://youtu.be/sEiNyzS8kTU)
+[View Video](https://youtu.be/Fecn352cD5w)
 
 Demonstrates: Building the project, running CLI demo, comparing routing policies, design pattern implementation, and architecture overview.
 
